@@ -1309,12 +1309,15 @@ function buildChallengeUrl() {
 
 function handleShareClick(btn) {
   if (!session || !lastResult) return;
-  const text = buildSummary(session.seed, lastResult, getBankVersion(), buildChallengeUrl());
+  const link = buildChallengeUrl();
+  const text = buildSummary(session.seed, lastResult, getBankVersion(), link);
 
   if (btn.id === 'share-whatsapp') {
     shareWhatsApp(text);
   } else if (btn.id === 'share-telegram') {
-    shareTelegram(text);
+    // Telegram carries the link in its url param, so the text goes WITHOUT
+    // the trailing link line — otherwise the message shows it twice.
+    shareTelegram(buildSummary(session.seed, lastResult, getBankVersion()), link);
   } else if (btn.id === 'copy-summary') {
     copyToClipboard(text).then((ok) => {
       flashButton(btn, ok ? 'Copied' : 'Copy failed');

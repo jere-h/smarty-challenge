@@ -84,11 +84,13 @@ export function shareWhatsApp(text) {
   openIntent(url);
 }
 
-// shareTelegram(text) -> void — https://t.me/share/url?url=&text=<encoded>
-export function shareTelegram(text) {
-  // Telegram's share endpoint wants a url param; we have no canonical link to
-  // share, so we send the summary as text and leave url empty.
-  const url = `https://t.me/share/url?url=${encodeURIComponent('')}&text=${encodeURIComponent(text)}`;
+// shareTelegram(text, link) -> void — https://t.me/share/url?url=<link>&text=<encoded>
+// Telegram's share endpoint REQUIRES a non-empty url param (an empty one makes
+// the app/web client reject the share, especially on phones). The challenge
+// link is that url; Telegram renders it first, then the text underneath.
+export function shareTelegram(text, link) {
+  const shareLink = link || 'https://jere-h.github.io/smarty-challenge/';
+  const url = `https://t.me/share/url?url=${encodeURIComponent(shareLink)}&text=${encodeURIComponent(text)}`;
   openIntent(url);
 }
 
