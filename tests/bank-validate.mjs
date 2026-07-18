@@ -31,7 +31,7 @@ const VALID_TYPES = new Set(['mcq', 'short-numeric']);
 const VALID_RULES = new Set(['exact', 'tolerance', 'fraction-equivalent']);
 const MIN_TOTAL = 60;
 const MIN_PER_TOPIC = 10;
-const EXPECTED_BANK_VERSION = 2;
+const EXPECTED_BANK_VERSION = 3;
 
 const errors = [];
 

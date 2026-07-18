@@ -1,55 +1,33 @@
 {
   "schemaVersion": 1,
-  "bankVersion": 2,
-  "subject": "P5 Math",
+  "bankVersion": 3,
+  "subject": "P6 Math",
   "questions": [
     {
       "id": "pm-frac-01",
       "topic": "Fractions",
-      "difficulty": 1,
-      "type": "mcq",
-      "prompt": "What is 1/4 + 1/4?",
-      "options": [
-        "1/2",
-        "1/8",
-        "3/4",
-        "1"
-      ],
-      "answer": 0,
+      "difficulty": 3,
+      "type": "short-numeric",
+      "prompt": "A librarian had a box of bookmarks. She gave 3/8 of them to Class A. Of the bookmarks that were left, she gave 2/5 to Class B. She then had 90 bookmarks remaining. How many bookmarks were in the box at first?",
+      "answer": "240",
       "check": {
-        "rule": "exact",
+        "rule": "fraction-equivalent",
         "accepted": [
-          "0"
+          "240"
         ]
       }
     },
     {
       "id": "pm-frac-02",
       "topic": "Fractions",
-      "difficulty": 2,
-      "type": "short-numeric",
-      "prompt": "What is 3/4 + 1/8? Give your answer as a fraction in its simplest form.",
-      "answer": "7/8",
-      "check": {
-        "rule": "fraction-equivalent",
-        "accepted": [
-          "7/8",
-          "14/16",
-          "0.875"
-        ]
-      }
-    },
-    {
-      "id": "pm-frac-03",
-      "topic": "Fractions",
-      "difficulty": 2,
+      "difficulty": 4,
       "type": "mcq",
-      "prompt": "Which fraction is equivalent to 2/3?",
+      "prompt": "A fruit seller had a crate of oranges. She sold 2/5 of them to a cafe. Of the oranges that remained, she packed 3/4 into gift boxes. The 33 oranges still left over were sold one by one. How many oranges did she pack into gift boxes?",
       "options": [
-        "3/4",
-        "4/6",
-        "2/6",
-        "5/6"
+        "220",
+        "99",
+        "165",
+        "132"
       ],
       "answer": 1,
       "check": {
@@ -60,31 +38,388 @@
       }
     },
     {
-      "id": "pm-frac-04",
+      "id": "pm-frac-03",
       "topic": "Fractions",
-      "difficulty": 3,
+      "difficulty": 4,
       "type": "short-numeric",
-      "prompt": "A ribbon is 5/6 m long. Sara uses 1/3 m of it. How much ribbon is left, in metres?",
-      "answer": "1/2",
+      "prompt": "Priya had some money. She spent 1/4 of it on a book and then $4 on a pen. With the money she had left, she spent 1/2 of it on lunch and then $4 on a drink. She was left with $30. How much money, in dollars, did Priya have at first?",
+      "answer": "96",
       "check": {
         "rule": "fraction-equivalent",
         "accepted": [
-          "1/2",
-          "3/6",
-          "2/4",
-          "0.5"
+          "96"
+        ]
+      }
+    },
+    {
+      "id": "pm-frac-04",
+      "topic": "Fractions",
+      "difficulty": 5,
+      "type": "short-numeric",
+      "prompt": "A tank contained some water. In the morning, 1/4 of the water was used and then 15 litres was added. In the afternoon, 1/3 of the water then in the tank was used and 6 litres drained away. In the evening, 1/2 of the water then in the tank was used and 5 litres was added, leaving 15 litres. How much water, in litres, was in the tank at first?",
+      "answer": "32",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "32"
         ]
       }
     },
     {
       "id": "pm-frac-05",
       "topic": "Fractions",
+      "difficulty": 4,
+      "type": "short-numeric",
+      "prompt": "In a jar, the number of green marbles was 3/4 of the number of yellow marbles. After 5 green marbles were added and 4 yellow marbles were removed, the number of green marbles became 5/6 of the number of yellow marbles. How many green marbles were in the jar at first?",
+      "answer": "75",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "75"
+        ]
+      }
+    },
+    {
+      "id": "pm-frac-06",
+      "topic": "Fractions",
+      "difficulty": 4,
+      "type": "mcq",
+      "prompt": "Ryan and Suri each had some money. Ryan had $40 less than Suri. Ryan then spent 1/3 of his money and Suri spent 2/5 of hers. They were each left with the same amount of money. How much money did Suri have at first?",
+      "options": [
+        "360",
+        "240",
+        "760",
+        "400"
+      ],
+      "answer": 3,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "3"
+        ]
+      }
+    },
+    {
+      "id": "pm-frac-07",
+      "topic": "Fractions",
+      "difficulty": 3,
+      "type": "short-numeric",
+      "prompt": "A rectangular tank measuring 40 cm by 30 cm by 50 cm is filled with water to 4/5 of its height. All the water is then poured into an empty rectangular container with a base of 40 cm by 20 cm and a height of 70 cm. What is the depth of the water in the container, in cm?",
+      "answer": "60",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "60"
+        ]
+      }
+    },
+    {
+      "id": "pm-frac-08",
+      "topic": "Fractions",
       "difficulty": 3,
       "type": "mcq",
-      "prompt": "What is 2/5 of 30?",
+      "prompt": "A rectangular drum measuring 40 cm by 30 cm by 40 cm is filled with cooking oil to 3/4 of its height. All the oil is poured into an empty rectangular tray with a base of 40 cm by 20 cm and a height of 55 cm. Find the depth of the oil in the tray, in cm.",
       "options": [
-        "10",
-        "15",
+        "60",
+        "45",
+        "30",
+        "15"
+      ],
+      "answer": 1,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "pm-frac-09",
+      "topic": "Fractions",
+      "difficulty": 4,
+      "type": "mcq",
+      "prompt": "At a school fun fair, 3/5 of the visitors were adults and the rest were children. After 60 children went home, 3/4 of the visitors who remained were adults. How many visitors were at the fun fair at first?",
+      "options": [
+        "400",
+        "240",
+        "300",
+        "180"
+      ],
+      "answer": 2,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "2"
+        ]
+      }
+    },
+    {
+      "id": "pm-frac-10",
+      "topic": "Fractions",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "The price of a jacket was first reduced by 1/4. During a sale, this reduced price was then reduced by a further 1/3. The final price was $60. What was the original price of the jacket, in dollars?",
+      "options": [
+        "120",
+        "144",
+        "90",
+        "80"
+      ],
+      "answer": 0,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "0"
+        ]
+      }
+    },
+    {
+      "id": "pm-perc-01",
+      "topic": "Percentage",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "A shop marks a coat at $250. A customer is given a 20% discount off this price. A 5% service charge is then added to the discounted price. How much does the customer pay in total, in dollars?",
+      "options": [
+        "212.50",
+        "200",
+        "210",
+        "190"
+      ],
+      "answer": 2,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "2"
+        ]
+      }
+    },
+    {
+      "id": "pm-perc-02",
+      "topic": "Percentage",
+      "difficulty": 3,
+      "type": "short-numeric",
+      "prompt": "Priya had a sum of money. She spent 40% of it on a bag, then spent 25% of the remaining money on a pair of shoes. She had $90 left. How much money did Priya have at first, in dollars?",
+      "answer": "200",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "200"
+        ]
+      }
+    },
+    {
+      "id": "pm-perc-03",
+      "topic": "Percentage",
+      "difficulty": 4,
+      "type": "mcq",
+      "prompt": "In a car park, the number of cars was 25% more than the number of motorcycles. After 18 more cars and 18 more motorcycles drove in, the number of cars became 20% more than the number of motorcycles. How many motorcycles were in the car park at first?",
+      "options": [
+        "90",
+        "72",
+        "18",
+        "108"
+      ],
+      "answer": 1,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "pm-perc-04",
+      "topic": "Percentage",
+      "difficulty": 3,
+      "type": "short-numeric",
+      "prompt": "The price of a phone was first increased by 25%. It was later sold at a 10% discount off the increased price for $270. What was the original price of the phone, in dollars?",
+      "answer": "240",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "240"
+        ]
+      }
+    },
+    {
+      "id": "pm-perc-05",
+      "topic": "Percentage",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "A charity collected a sum of money in donations. It gave 30% of the money to a hospital, then gave 20% of the remaining money to a school. It kept the rest, which was $2800. How much money did the charity collect altogether, in dollars?",
+      "options": [
+        "5600",
+        "4000",
+        "3500",
+        "5000"
+      ],
+      "answer": 3,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "3"
+        ]
+      }
+    },
+    {
+      "id": "pm-perc-06",
+      "topic": "Percentage",
+      "difficulty": 4,
+      "type": "short-numeric",
+      "prompt": "At a fair, 40% of the visitors were children and the rest were adults. After 50 children went home, the children who were still at the fair made up 25% of the remaining visitors. How many visitors were at the fair at first?",
+      "answer": "250",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "250"
+        ]
+      }
+    },
+    {
+      "id": "pm-perc-07",
+      "topic": "Percentage",
+      "difficulty": 4,
+      "type": "mcq",
+      "prompt": "Aisha had 30 more stickers than Bala. Aisha gave away 20% of her stickers and Bala gave away 10% of his stickers. After that, they each had the same number of stickers left. How many stickers did Aisha have at first?",
+      "options": [
+        "240",
+        "330",
+        "270",
+        "216"
+      ],
+      "answer": 2,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "2"
+        ]
+      }
+    },
+    {
+      "id": "pm-perc-08",
+      "topic": "Percentage",
+      "difficulty": 4,
+      "type": "short-numeric",
+      "prompt": "Devi had a sum of money. She spent 40% of it on clothes. She then spent $50 on food. Finally, she spent 25% of the money she had left on a toy, and was left with $120. How much money did Devi have at first, in dollars?",
+      "answer": "350",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "350"
+        ]
+      }
+    },
+    {
+      "id": "pm-perc-09",
+      "topic": "Percentage",
+      "difficulty": 4,
+      "type": "mcq",
+      "prompt": "In a school club, the ratio of the number of boys to the number of girls is 4:3. Exactly 25% of the boys and 40% of the girls wear glasses. Altogether, 66 members wear glasses. How many members are in the club?",
+      "options": [
+        "30",
+        "210",
+        "120",
+        "300"
+      ],
+      "answer": 1,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "pm-perc-10",
+      "topic": "Percentage",
+      "difficulty": 5,
+      "type": "short-numeric",
+      "prompt": "At a library event, some of the people were adults and the rest were children. Exactly half of the children borrowed a book and the other half did not. After all the children who did not borrow a book left, there were 320 people remaining, and 75% of them were adults. How many people were at the library event at first?",
+      "answer": "400",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "400"
+        ]
+      }
+    },
+    {
+      "id": "pm-ratio-01",
+      "topic": "Ratio",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "A library shelf holds fiction and non-fiction books in the ratio 1 : 2. After the librarian adds some more fiction books, the ratio of fiction to non-fiction books becomes 5 : 6. The number of non-fiction books does not change. If 20 fiction books were added, how many fiction books were on the shelf at first?",
+      "options": [
+        "5",
+        "60",
+        "30",
+        "50"
+      ],
+      "answer": 2,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "2"
+        ]
+      }
+    },
+    {
+      "id": "pm-ratio-02",
+      "topic": "Ratio",
+      "difficulty": 3,
+      "type": "short-numeric",
+      "prompt": "Ben and Aisha have savings in the ratio 2 : 5. Aisha's savings stay the same. After Ben saves another $27, the ratio of Ben's savings to Aisha's savings becomes 7 : 10. How much money, in dollars, does Ben have now?",
+      "answer": "63",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "63"
+        ]
+      }
+    },
+    {
+      "id": "pm-ratio-03",
+      "topic": "Ratio",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "Jar A and Jar B together contain marbles. The ratio of marbles in Jar A to Jar B is 5 : 1. After 16 marbles are moved from Jar A to Jar B, the ratio becomes 1 : 1. How many marbles were in Jar A at first?",
+      "options": [
+        "20",
+        "40",
+        "48",
+        "8"
+      ],
+      "answer": 1,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "pm-ratio-04",
+      "topic": "Ratio",
+      "difficulty": 3,
+      "type": "short-numeric",
+      "prompt": "Container X and Container Y hold water in the ratio 5 : 4. After 10 litres of water is poured from Container X into Container Y, the ratio of water in Container X to Container Y becomes 1 : 2. Find the final volume of water in Container Y, in litres.",
+      "answer": "30",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "30"
+        ]
+      }
+    },
+    {
+      "id": "pm-ratio-05",
+      "topic": "Ratio",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "The ages of Rita and her aunt are in the ratio 2 : 5. In a few years' time, the ratio of their ages will be 4 : 7. Their ages always differ by 18 years. In how many years' time will their ages be in the ratio 4 : 7?",
+      "options": [
+        "24",
+        "18",
         "12",
         "6"
       ],
@@ -97,68 +432,44 @@
       }
     },
     {
-      "id": "pm-frac-06",
-      "topic": "Fractions",
+      "id": "pm-ratio-06",
+      "topic": "Ratio",
       "difficulty": 4,
       "type": "short-numeric",
-      "prompt": "What is 2 1/2 divided by 5? Give your answer as a fraction in its simplest form.",
-      "answer": "1/2",
+      "prompt": "Box P and Box Q contain screws in the ratio 9 : 5. An equal number of screws is taken from each box. After 12 screws are removed from each box, the ratio of screws in Box P to Box Q becomes 3 : 1. What fraction of the screws originally in Box P are left? Give your answer as a fraction in its simplest form.",
+      "answer": "2/3",
       "check": {
         "rule": "fraction-equivalent",
         "accepted": [
-          "1/2",
-          "2/4",
-          "0.5"
+          "2/3"
         ]
       }
     },
     {
-      "id": "pm-frac-07",
-      "topic": "Fractions",
-      "difficulty": 1,
-      "type": "mcq",
-      "prompt": "What is 1/3 + 1/3?",
-      "options": [
-        "1/3",
-        "3/6",
-        "1",
-        "2/3"
-      ],
-      "answer": 3,
-      "check": {
-        "rule": "exact",
-        "accepted": [
-          "3"
-        ]
-      }
-    },
-    {
-      "id": "pm-frac-08",
-      "topic": "Fractions",
-      "difficulty": 2,
+      "id": "pm-ratio-07",
+      "topic": "Ratio",
+      "difficulty": 4,
       "type": "short-numeric",
-      "prompt": "What is 3/5 - 1/5? Give your answer as a fraction in its simplest form.",
-      "answer": "2/5",
+      "prompt": "In a choir, the ratio of sopranos to altos is 5 : 3, and the ratio of altos to tenors is 2 : 5. The choir has fewer than 100 members. What is the largest possible number of tenors in the choir?",
+      "answer": "45",
       "check": {
         "rule": "fraction-equivalent",
         "accepted": [
-          "2/5",
-          "4/10",
-          "0.4"
+          "45"
         ]
       }
     },
     {
-      "id": "pm-frac-09",
-      "topic": "Fractions",
-      "difficulty": 3,
+      "id": "pm-ratio-08",
+      "topic": "Ratio",
+      "difficulty": 4,
       "type": "mcq",
-      "prompt": "Which fraction is equivalent to 3/4?",
+      "prompt": "At a museum, the ratio of the number of children to the total number of visitors was 2 : 5. After 60 children left, the ratio of the number of children to the total number of visitors became 1 : 4. How many visitors were at the museum at first?",
       "options": [
-        "6/8",
-        "4/5",
-        "3/8",
-        "2/4"
+        "300",
+        "400",
+        "240",
+        "180"
       ],
       "answer": 0,
       "check": {
@@ -169,321 +480,30 @@
       }
     },
     {
-      "id": "pm-frac-10",
-      "topic": "Fractions",
-      "difficulty": 4,
-      "type": "short-numeric",
-      "prompt": "A tank is 3/8 full of water. After adding 1/4 more, what fraction of the tank is full?",
-      "answer": "5/8",
-      "check": {
-        "rule": "fraction-equivalent",
-        "accepted": [
-          "5/8",
-          "10/16",
-          "0.625"
-        ]
-      }
-    },
-    {
-      "id": "pm-frac-11",
-      "topic": "Fractions",
-      "difficulty": 5,
-      "type": "mcq",
-      "prompt": "What is 3/4 of 2/3 of 60?",
-      "options": [
-        "40",
-        "30",
-        "45",
-        "20"
-      ],
-      "answer": 1,
-      "check": {
-        "rule": "exact",
-        "accepted": [
-          "1"
-        ]
-      }
-    },
-    {
-      "id": "pm-dec-01",
-      "topic": "Decimals",
-      "difficulty": 1,
-      "type": "mcq",
-      "prompt": "What is 0.6 + 0.3?",
-      "options": [
-        "0.63",
-        "0.09",
-        "0.9",
-        "1.9"
-      ],
-      "answer": 2,
-      "check": {
-        "rule": "exact",
-        "accepted": [
-          "2"
-        ]
-      }
-    },
-    {
-      "id": "pm-dec-02",
-      "topic": "Decimals",
-      "difficulty": 2,
-      "type": "short-numeric",
-      "prompt": "What is 4.5 + 2.75?",
-      "answer": 7.25,
-      "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
-        "accepted": [
-          "7.25",
-          "7,25"
-        ]
-      }
-    },
-    {
-      "id": "pm-dec-03",
-      "topic": "Decimals",
-      "difficulty": 2,
-      "type": "mcq",
-      "prompt": "What is 0.25 written as a fraction in its simplest form?",
-      "options": [
-        "2/5",
-        "1/5",
-        "25/10",
-        "1/4"
-      ],
-      "answer": 3,
-      "check": {
-        "rule": "exact",
-        "accepted": [
-          "3"
-        ]
-      }
-    },
-    {
-      "id": "pm-dec-04",
-      "topic": "Decimals",
-      "difficulty": 3,
-      "type": "short-numeric",
-      "prompt": "What is 3.2 multiplied by 4?",
-      "answer": 12.8,
-      "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
-        "accepted": [
-          "12.8",
-          "12,8"
-        ]
-      }
-    },
-    {
-      "id": "pm-dec-05",
-      "topic": "Decimals",
-      "difficulty": 3,
-      "type": "mcq",
-      "prompt": "What is 9.6 divided by 3?",
-      "options": [
-        "3.2",
-        "3.02",
-        "32",
-        "0.32"
-      ],
-      "answer": 0,
-      "check": {
-        "rule": "exact",
-        "accepted": [
-          "0"
-        ]
-      }
-    },
-    {
-      "id": "pm-dec-06",
-      "topic": "Decimals",
-      "difficulty": 4,
-      "type": "short-numeric",
-      "prompt": "A pen costs $1.35. How much do 6 identical pens cost, in dollars?",
-      "answer": 8.1,
-      "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
-        "accepted": [
-          "8.1",
-          "8.10",
-          "8,1",
-          "8,10"
-        ]
-      }
-    },
-    {
-      "id": "pm-dec-07",
-      "topic": "Decimals",
-      "difficulty": 1,
-      "type": "mcq",
-      "prompt": "What is 0.5 + 0.4?",
-      "options": [
-        "0.09",
-        "0.9",
-        "1.9",
-        "0.45"
-      ],
-      "answer": 1,
-      "check": {
-        "rule": "exact",
-        "accepted": [
-          "1"
-        ]
-      }
-    },
-    {
-      "id": "pm-dec-08",
-      "topic": "Decimals",
-      "difficulty": 2,
-      "type": "short-numeric",
-      "prompt": "What is 6.5 - 2.25?",
-      "answer": 4.25,
-      "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
-        "accepted": [
-          "4.25",
-          "4,25"
-        ]
-      }
-    },
-    {
-      "id": "pm-dec-09",
-      "topic": "Decimals",
-      "difficulty": 3,
-      "type": "mcq",
-      "prompt": "What is 0.125 written as a fraction in its simplest form?",
-      "options": [
-        "1/5",
-        "1/9",
-        "1/8",
-        "5/8"
-      ],
-      "answer": 2,
-      "check": {
-        "rule": "exact",
-        "accepted": [
-          "2"
-        ]
-      }
-    },
-    {
-      "id": "pm-dec-10",
-      "topic": "Decimals",
-      "difficulty": 4,
-      "type": "short-numeric",
-      "prompt": "What is 7.5 divided by 5?",
-      "answer": 1.5,
-      "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
-        "accepted": [
-          "1.5",
-          "1,5"
-        ]
-      }
-    },
-    {
-      "id": "pm-dec-11",
-      "topic": "Decimals",
+      "id": "pm-ratio-09",
+      "topic": "Ratio",
       "difficulty": 5,
       "type": "short-numeric",
-      "prompt": "A ribbon of length 12.6 m is cut into pieces of 0.9 m each. How many pieces are cut?",
-      "answer": 14,
+      "prompt": "At a football stadium, 3/5 of the spectators supported the home team. Of the remaining spectators, the ratio of visiting-team supporters to neutral spectators was 3 : 2. After 110 neutral spectators left, the neutral spectators made up 1/9 of the remaining spectators. How many spectators supported the visiting team?",
+      "answer": "480",
       "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
+        "rule": "fraction-equivalent",
         "accepted": [
-          "14"
+          "480"
         ]
       }
     },
     {
-      "id": "pm-pct-01",
-      "topic": "Percentage",
-      "difficulty": 1,
+      "id": "pm-ratio-10",
+      "topic": "Ratio",
+      "difficulty": 4,
       "type": "mcq",
-      "prompt": "What is 50% of 80?",
+      "prompt": "Meena and Nadia had stickers in the ratio 4 : 7. Meena then bought 30 more stickers and Nadia gave away 10 stickers, so the ratio of Meena's stickers to Nadia's stickers became 2 : 3. How many stickers did Nadia have at first?",
       "options": [
-        "30",
-        "20",
-        "160",
-        "40"
-      ],
-      "answer": 3,
-      "check": {
-        "rule": "exact",
-        "accepted": [
-          "3"
-        ]
-      }
-    },
-    {
-      "id": "pm-pct-02",
-      "topic": "Percentage",
-      "difficulty": 2,
-      "type": "short-numeric",
-      "prompt": "What is 25% of 240?",
-      "answer": 60,
-      "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
-        "accepted": [
-          "60"
-        ]
-      }
-    },
-    {
-      "id": "pm-pct-03",
-      "topic": "Percentage",
-      "difficulty": 2,
-      "type": "mcq",
-      "prompt": "Write 0.7 as a percentage.",
-      "options": [
-        "70%",
-        "7%",
-        "0.7%",
-        "0.07%"
-      ],
-      "answer": 0,
-      "check": {
-        "rule": "exact",
-        "accepted": [
-          "0"
-        ]
-      }
-    },
-    {
-      "id": "pm-pct-04",
-      "topic": "Percentage",
-      "difficulty": 3,
-      "type": "short-numeric",
-      "prompt": "A jacket costs $80. In a sale its price is reduced by 15%. What is the new price, in dollars?",
-      "answer": 68,
-      "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
-        "accepted": [
-          "68",
-          "68.00",
-          "68,00"
-        ]
-      }
-    },
-    {
-      "id": "pm-pct-05",
-      "topic": "Percentage",
-      "difficulty": 3,
-      "type": "mcq",
-      "prompt": "What is 3/5 written as a percentage?",
-      "options": [
-        "35%",
-        "60%",
-        "53%",
-        "30%"
+        "245",
+        "385",
+        "220",
+        "375"
       ],
       "answer": 1,
       "check": {
@@ -494,66 +514,58 @@
       }
     },
     {
-      "id": "pm-pct-06",
-      "topic": "Percentage",
-      "difficulty": 4,
+      "id": "pm-speed-01",
+      "topic": "Speed & Rate",
+      "difficulty": 3,
       "type": "short-numeric",
-      "prompt": "There are 200 pupils in a school. 35% of them wear glasses. How many pupils wear glasses?",
-      "answer": 70,
+      "prompt": "Station M and Station N are 510 km apart along a straight railway. At 09 00, a passenger train leaves Station M and travels toward Station N at a steady 60 km/h. At 10 00, a freight train leaves Station N and travels toward Station M at a steady 90 km/h. How far from Station N, in km, do the two trains meet?",
+      "answer": "270",
       "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "270"
+        ]
+      }
+    },
+    {
+      "id": "pm-speed-02",
+      "topic": "Speed & Rate",
+      "difficulty": 5,
+      "type": "short-numeric",
+      "prompt": "Pier X and Pier Y are 100 m apart on a straight canal. At the same moment, Boat A sets off from Pier X toward Pier Y at a steady 20 m/min and Boat B sets off from Pier Y toward Pier X at a steady 30 m/min. Each boat turns around instantly whenever it reaches a pier and keeps its speed. How far from Pier X, in metres, are the two boats when they pass each other face to face for the second time?",
+      "answer": "80",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "80"
+        ]
+      }
+    },
+    {
+      "id": "pm-speed-03",
+      "topic": "Speed & Rate",
+      "difficulty": 3,
+      "type": "short-numeric",
+      "prompt": "A lorry passes a road gantry travelling at a steady 50 km/h. Exactly 24 minutes later, a van passes the same gantry travelling in the same direction at a steady 70 km/h. How far past the gantry, in km, does the van catch up with the lorry?",
+      "answer": "70",
+      "check": {
+        "rule": "fraction-equivalent",
         "accepted": [
           "70"
         ]
       }
     },
     {
-      "id": "pm-pct-07",
-      "topic": "Percentage",
-      "difficulty": 1,
+      "id": "pm-speed-04",
+      "topic": "Speed & Rate",
+      "difficulty": 4,
       "type": "mcq",
-      "prompt": "What is 10% of 90?",
+      "prompt": "Car P leaves a town at 08 00 and drives north along a straight highway at a steady 50 km/h. Car Q leaves the same town along the same highway at 08 30 and drives north at a steady 80 km/h. At what time is Car Q exactly 15 km ahead of Car P?",
       "options": [
-        "19",
-        "90",
-        "9",
-        "0.9"
-      ],
-      "answer": 2,
-      "check": {
-        "rule": "exact",
-        "accepted": [
-          "2"
-        ]
-      }
-    },
-    {
-      "id": "pm-pct-08",
-      "topic": "Percentage",
-      "difficulty": 2,
-      "type": "short-numeric",
-      "prompt": "What is 40% of 150?",
-      "answer": 60,
-      "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
-        "accepted": [
-          "60"
-        ]
-      }
-    },
-    {
-      "id": "pm-pct-09",
-      "topic": "Percentage",
-      "difficulty": 3,
-      "type": "mcq",
-      "prompt": "Write 3/8 as a percentage.",
-      "options": [
-        "38%",
-        "3.8%",
-        "375%",
-        "37.5%"
+        "09 00",
+        "09 20",
+        "08 50",
+        "09 50"
       ],
       "answer": 3,
       "check": {
@@ -564,48 +576,16 @@
       }
     },
     {
-      "id": "pm-pct-10",
-      "topic": "Percentage",
+      "id": "pm-speed-05",
+      "topic": "Speed & Rate",
       "difficulty": 4,
-      "type": "short-numeric",
-      "prompt": "A bag of rice costs $45. Its price increases by 20%. What is the new price, in dollars?",
-      "answer": 54,
-      "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
-        "accepted": [
-          "54",
-          "54.00",
-          "54,00"
-        ]
-      }
-    },
-    {
-      "id": "pm-pct-11",
-      "topic": "Percentage",
-      "difficulty": 5,
-      "type": "short-numeric",
-      "prompt": "In a class of 40 pupils, 60% passed a test on the first try. Of the pupils who did not pass, half passed on a second try. How many pupils in total passed the test?",
-      "answer": 32,
-      "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
-        "accepted": [
-          "32"
-        ]
-      }
-    },
-    {
-      "id": "pm-rat-01",
-      "topic": "Ratio",
-      "difficulty": 1,
       "type": "mcq",
-      "prompt": "Simplify the ratio 4 : 8.",
+      "prompt": "An empty swimming pool is filled by two inlet pipes. Pipe A alone fills the pool in 30 minutes and Pipe B alone fills it in 45 minutes. Both pipes are opened together for 6 minutes, then Pipe B is turned off and Pipe A continues alone until the pool is full. How many minutes does it take to fill the pool altogether?",
       "options": [
-        "1 : 2",
-        "2 : 1",
-        "4 : 8",
-        "1 : 4"
+        "26",
+        "18",
+        "36",
+        "20"
       ],
       "answer": 0,
       "check": {
@@ -616,101 +596,16 @@
       }
     },
     {
-      "id": "pm-rat-02",
-      "topic": "Ratio",
-      "difficulty": 2,
-      "type": "short-numeric",
-      "prompt": "Two numbers are in the ratio 2 : 3. If the smaller number is 10, what is the larger number?",
-      "answer": 15,
-      "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
-        "accepted": [
-          "15"
-        ]
-      }
-    },
-    {
-      "id": "pm-rat-03",
-      "topic": "Ratio",
-      "difficulty": 2,
+      "id": "pm-speed-06",
+      "topic": "Speed & Rate",
+      "difficulty": 4,
       "type": "mcq",
-      "prompt": "Simplify the ratio 9 : 12.",
+      "prompt": "Working alone, Painter A can paint a long fence in 6 days and Painter B can paint the same fence in 12 days. They agree that on any given day only one of them paints. Working this way, the fence is completed in exactly 9 days. On how many days did Painter A paint?",
       "options": [
-        "4 : 3",
-        "3 : 4",
-        "9 : 12",
-        "1 : 3"
-      ],
-      "answer": 1,
-      "check": {
-        "rule": "exact",
-        "accepted": [
-          "1"
-        ]
-      }
-    },
-    {
-      "id": "pm-rat-04",
-      "topic": "Ratio",
-      "difficulty": 3,
-      "type": "short-numeric",
-      "prompt": "Sweets are shared between Mei and Raj in the ratio 3 : 5. There are 40 sweets in total. How many sweets does Raj get?",
-      "answer": 25,
-      "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
-        "accepted": [
-          "25"
-        ]
-      }
-    },
-    {
-      "id": "pm-rat-05",
-      "topic": "Ratio",
-      "difficulty": 3,
-      "type": "mcq",
-      "prompt": "A recipe mixes flour and sugar in the ratio 5 : 2. If 20 cups of flour are used, how many cups of sugar are needed?",
-      "options": [
-        "10",
         "4",
-        "8",
-        "50"
-      ],
-      "answer": 2,
-      "check": {
-        "rule": "exact",
-        "accepted": [
-          "2"
-        ]
-      }
-    },
-    {
-      "id": "pm-rat-06",
-      "topic": "Ratio",
-      "difficulty": 4,
-      "type": "short-numeric",
-      "prompt": "The ratio of red to blue marbles is 4 : 7. There are 12 more blue marbles than red marbles. How many red marbles are there?",
-      "answer": 16,
-      "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
-        "accepted": [
-          "16"
-        ]
-      }
-    },
-    {
-      "id": "pm-rat-07",
-      "topic": "Ratio",
-      "difficulty": 1,
-      "type": "mcq",
-      "prompt": "Simplify the ratio 6 : 9.",
-      "options": [
-        "3 : 2",
-        "6 : 9",
-        "1 : 3",
-        "2 : 3"
+        "6",
+        "4.5",
+        "3"
       ],
       "answer": 3,
       "check": {
@@ -721,116 +616,118 @@
       }
     },
     {
-      "id": "pm-rat-08",
-      "topic": "Ratio",
-      "difficulty": 2,
+      "id": "pm-speed-07",
+      "topic": "Speed & Rate",
+      "difficulty": 3,
       "type": "short-numeric",
-      "prompt": "Two numbers are in the ratio 3 : 4. If the larger number is 24, what is the smaller number?",
-      "answer": 18,
+      "prompt": "A delivery van drives from its warehouse to a depot at a steady 40 km/h. It then returns to the warehouse along exactly the same route at a steady 60 km/h. Taking the whole trip (there and back) together, what is the van's average speed, in km/h?",
+      "answer": "48",
       "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
+        "rule": "fraction-equivalent",
         "accepted": [
-          "18"
+          "48"
         ]
       }
     },
     {
-      "id": "pm-rat-09",
-      "topic": "Ratio",
+      "id": "pm-speed-08",
+      "topic": "Speed & Rate",
       "difficulty": 3,
+      "type": "short-numeric",
+      "prompt": "A tour bus travels at a steady 54 km/h for 20 minutes, and this brings it exactly one quarter of the way along its planned route. What is the total length of the route, in km?",
+      "answer": "72",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "72"
+        ]
+      }
+    },
+    {
+      "id": "pm-speed-09",
+      "topic": "Speed & Rate",
+      "difficulty": 4,
       "type": "mcq",
-      "prompt": "Simplify the ratio 15 : 20.",
+      "prompt": "A rectangular fish tank has a base measuring 30 cm by 40 cm and a height of 50 cm. It already holds water to a depth of 10 cm. A tap then pours water in at 10 litres per minute while a small leak at the bottom lets water out at 2 litres per minute. Taking 1 litre = 1000 cm^3, how many minutes does it take for the water to reach the top of the tank?",
       "options": [
-        "3 : 4",
-        "4 : 3",
-        "15 : 20",
-        "1 : 5"
+        "7.5",
+        "4.8",
+        "4",
+        "6"
+      ],
+      "answer": 3,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "3"
+        ]
+      }
+    },
+    {
+      "id": "pm-speed-10",
+      "topic": "Speed & Rate",
+      "difficulty": 4,
+      "type": "mcq",
+      "prompt": "An empty rectangular water tank at a worksite has a base measuring 60 cm by 25 cm. A tap is opened, pouring water in at 9 litres per minute. After 4 minutes a drain is opened at the bottom, letting water out at 3 litres per minute while the tap keeps running. Taking 1 litre = 1000 cm^3, what is the depth of the water, in cm, 10 minutes after the tap was first opened?",
+      "options": [
+        "48",
+        "60",
+        "40",
+        "52"
       ],
       "answer": 0,
       "check": {
         "rule": "exact",
         "accepted": [
           "0"
-        ]
-      }
-    },
-    {
-      "id": "pm-rat-10",
-      "topic": "Ratio",
-      "difficulty": 4,
-      "type": "short-numeric",
-      "prompt": "Marbles are shared between Ali and Ben in the ratio 4 : 5. Ben has 15 more marbles than Ali. How many marbles does Ali have?",
-      "answer": 60,
-      "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
-        "accepted": [
-          "60"
-        ]
-      }
-    },
-    {
-      "id": "pm-rat-11",
-      "topic": "Ratio",
-      "difficulty": 5,
-      "type": "short-numeric",
-      "prompt": "The ratio of the number of boys to girls in a school is 5 : 6. There are 220 pupils in total. How many more girls than boys are there?",
-      "answer": 20,
-      "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
-        "accepted": [
-          "20"
         ]
       }
     },
     {
       "id": "pm-area-01",
-      "topic": "Area & Perimeter",
-      "difficulty": 1,
-      "type": "mcq",
-      "prompt": "A square has a side of 6 cm. What is its perimeter, in cm?",
-      "options": [
-        "36",
-        "24",
-        "12",
-        "30"
-      ],
-      "answer": 1,
+      "topic": "Area & Volume",
+      "difficulty": 3,
+      "type": "short-numeric",
+      "prompt": "An aquarium in the shape of a cuboid measures 50 cm long, 20 cm wide and 18 cm high. It is filled with water to 2/3 of its height. All the water is then poured into an empty rectangular tank whose base measures 40 cm by 30 cm. The tank is tall enough not to overflow. What is the depth of the water in the tank, in cm?",
+      "answer": "10",
       "check": {
-        "rule": "exact",
+        "rule": "fraction-equivalent",
         "accepted": [
-          "1"
+          "10"
         ]
       }
     },
     {
       "id": "pm-area-02",
-      "topic": "Area & Perimeter",
-      "difficulty": 2,
-      "type": "short-numeric",
-      "prompt": "A rectangle is 8 cm long and 3 cm wide. What is its area, in square cm?",
-      "answer": 24,
+      "topic": "Area & Volume",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "A rectangular juice jug measures 20 cm long, 10 cm wide and 24 cm high. It is filled with juice to 3/4 of its height. All the juice is then poured into an empty rectangular container whose base measures 30 cm by 16 cm. What is the depth of the juice in the container, in cm?",
+      "options": [
+        "18",
+        "10",
+        "24",
+        "7.5"
+      ],
+      "answer": 3,
       "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
+        "rule": "exact",
         "accepted": [
-          "24"
+          "3"
         ]
       }
     },
     {
       "id": "pm-area-03",
-      "topic": "Area & Perimeter",
-      "difficulty": 2,
+      "topic": "Area & Volume",
+      "difficulty": 4,
       "type": "mcq",
-      "prompt": "A square has a side of 5 cm. What is its area, in square cm?",
+      "prompt": "Tank A has a base measuring 40 cm by 25 cm and contains water to a depth of 12 cm. Tank B has a base measuring 30 cm by 20 cm and already contains water to a depth of 15 cm. All the water in Tank A is poured into Tank B, which is tall enough not to overflow. What is the final depth of the water in Tank B, in cm?",
       "options": [
         "20",
-        "10",
-        "25",
-        "50"
+        "27",
+        "35",
+        "15"
       ],
       "answer": 2,
       "check": {
@@ -842,65 +739,29 @@
     },
     {
       "id": "pm-area-04",
-      "topic": "Area & Perimeter",
+      "topic": "Area & Volume",
       "difficulty": 3,
       "type": "short-numeric",
-      "prompt": "A rectangle has an area of 48 square cm and a length of 8 cm. What is its width, in cm?",
-      "answer": 6,
+      "prompt": "A rectangular pool with a base measuring 40 cm by 50 cm is empty. A tap fills it with water at a rate of 6 litres per minute. (1 litre = 1000 cm^3.) What is the depth of the water in the pool after 8 minutes, in cm?",
+      "answer": "24",
       "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
+        "rule": "fraction-equivalent",
         "accepted": [
-          "6"
+          "24"
         ]
       }
     },
     {
       "id": "pm-area-05",
-      "topic": "Area & Perimeter",
-      "difficulty": 3,
-      "type": "mcq",
-      "prompt": "A triangle has a base of 10 cm and a height of 6 cm. What is its area, in square cm?",
-      "options": [
-        "60",
-        "16",
-        "15",
-        "30"
-      ],
-      "answer": 3,
-      "check": {
-        "rule": "exact",
-        "accepted": [
-          "3"
-        ]
-      }
-    },
-    {
-      "id": "pm-area-06",
-      "topic": "Area & Perimeter",
+      "topic": "Area & Volume",
       "difficulty": 4,
-      "type": "short-numeric",
-      "prompt": "A rectangle has a perimeter of 30 cm and a width of 5 cm. What is its length, in cm?",
-      "answer": 10,
-      "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
-        "accepted": [
-          "10"
-        ]
-      }
-    },
-    {
-      "id": "pm-area-07",
-      "topic": "Area & Perimeter",
-      "difficulty": 1,
       "type": "mcq",
-      "prompt": "A rectangle is 7 cm long and 4 cm wide. What is its perimeter, in cm?",
+      "prompt": "A fish pond in the shape of a cuboid measures 60 cm long, 30 cm wide and 50 cm high. It is 1/3 filled with water. A tap is then turned on to add water at 4 litres per minute, but at the same time a leak lets water out at 1 litre per minute. (1 litre = 1000 cm^3.) How many minutes will it take to fill the pond completely?",
       "options": [
-        "22",
-        "28",
-        "11",
-        "33"
+        "20",
+        "30",
+        "15",
+        "12"
       ],
       "answer": 0,
       "check": {
@@ -911,116 +772,30 @@
       }
     },
     {
-      "id": "pm-area-08",
-      "topic": "Area & Perimeter",
-      "difficulty": 2,
-      "type": "short-numeric",
-      "prompt": "A square has a perimeter of 20 cm. What is the length of one side, in cm?",
-      "answer": 5,
-      "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
-        "accepted": [
-          "5"
-        ]
-      }
-    },
-    {
-      "id": "pm-area-09",
-      "topic": "Area & Perimeter",
+      "id": "pm-area-06",
+      "topic": "Area & Volume",
       "difficulty": 3,
-      "type": "mcq",
-      "prompt": "A rectangle has a length of 9 cm and an area of 54 square cm. What is its width, in cm?",
-      "options": [
-        "9",
-        "6",
-        "45",
-        "63"
-      ],
-      "answer": 1,
-      "check": {
-        "rule": "exact",
-        "accepted": [
-          "1"
-        ]
-      }
-    },
-    {
-      "id": "pm-area-10",
-      "topic": "Area & Perimeter",
-      "difficulty": 4,
       "type": "short-numeric",
-      "prompt": "A triangle has an area of 40 square cm and a base of 8 cm. What is its height, in cm?",
-      "answer": 10,
+      "prompt": "A fountain reservoir with a base measuring 50 cm by 40 cm is empty. Two pipes fill it with water at the same time: one at 4 litres per minute and the other at 6 litres per minute. (1 litre = 1000 cm^3.) How many minutes will it take for the water level to reach a depth of 30 cm?",
+      "answer": "6",
       "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
-        "accepted": [
-          "10"
-        ]
-      }
-    },
-    {
-      "id": "pm-area-11",
-      "topic": "Area & Perimeter",
-      "difficulty": 5,
-      "type": "short-numeric",
-      "prompt": "A rectangular garden measures 12 m by 9 m. A 1 m-wide path runs around the inside of the garden, along its border. What is the area of the garden not covered by the path, in square metres?",
-      "answer": 70,
-      "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
-        "accepted": [
-          "70"
-        ]
-      }
-    },
-    {
-      "id": "pm-avg-01",
-      "topic": "Average",
-      "difficulty": 1,
-      "type": "mcq",
-      "prompt": "What is the average of 4 and 8?",
-      "options": [
-        "12",
-        "4",
-        "6",
-        "8"
-      ],
-      "answer": 2,
-      "check": {
-        "rule": "exact",
-        "accepted": [
-          "2"
-        ]
-      }
-    },
-    {
-      "id": "pm-avg-02",
-      "topic": "Average",
-      "difficulty": 2,
-      "type": "short-numeric",
-      "prompt": "Find the average of 3, 7 and 8.",
-      "answer": 6,
-      "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
+        "rule": "fraction-equivalent",
         "accepted": [
           "6"
         ]
       }
     },
     {
-      "id": "pm-avg-03",
-      "topic": "Average",
-      "difficulty": 2,
+      "id": "pm-area-07",
+      "topic": "Area & Volume",
+      "difficulty": 5,
       "type": "mcq",
-      "prompt": "The average of 3 numbers is 10. What is their total?",
+      "prompt": "An empty water tank has a capacity of 120 litres. Tap A is turned on and fills it at 8 litres per minute. Exactly 5 minutes later a drain is opened that lets water out at 3 litres per minute, while Tap A keeps running. How many minutes after Tap A was first turned on will the tank be completely full?",
       "options": [
-        "13",
-        "10",
-        "33",
-        "30"
+        "15",
+        "16",
+        "24",
+        "21"
       ],
       "answer": 3,
       "check": {
@@ -1031,66 +806,16 @@
       }
     },
     {
-      "id": "pm-avg-04",
-      "topic": "Average",
-      "difficulty": 3,
-      "type": "short-numeric",
-      "prompt": "The average of 5 numbers is 12. Four of the numbers add up to 50. What is the fifth number?",
-      "answer": 10,
-      "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
-        "accepted": [
-          "10"
-        ]
-      }
-    },
-    {
-      "id": "pm-avg-05",
-      "topic": "Average",
-      "difficulty": 3,
-      "type": "mcq",
-      "prompt": "A car travels 120 km in 2 hours. What is its average speed, in km/h?",
-      "options": [
-        "60",
-        "240",
-        "122",
-        "30"
-      ],
-      "answer": 0,
-      "check": {
-        "rule": "exact",
-        "accepted": [
-          "0"
-        ]
-      }
-    },
-    {
-      "id": "pm-avg-06",
-      "topic": "Average",
+      "id": "pm-area-08",
+      "topic": "Area & Volume",
       "difficulty": 4,
-      "type": "short-numeric",
-      "prompt": "The average mass of 4 boxes is 9 kg. A fifth box with a mass of 14 kg is added. What is the new average mass of the 5 boxes, in kg?",
-      "answer": 10,
-      "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
-        "accepted": [
-          "10"
-        ]
-      }
-    },
-    {
-      "id": "pm-avg-07",
-      "topic": "Average",
-      "difficulty": 1,
       "type": "mcq",
-      "prompt": "What is the average of 10, 20 and 30?",
+      "prompt": "A straight shelf can be completely filled, with no gaps, in two different ways: either by 4 thick books and 2 thin books standing upright side by side, or by 2 thick books and 6 thin books standing upright side by side. Each thick book is 3 cm wider than each thin book. What is the length of the shelf, in cm?",
       "options": [
+        "24",
         "30",
-        "20",
-        "60",
-        "15"
+        "18",
+        "6"
       ],
       "answer": 1,
       "check": {
@@ -1101,67 +826,200 @@
       }
     },
     {
-      "id": "pm-avg-08",
-      "topic": "Average",
-      "difficulty": 2,
+      "id": "pm-area-09",
+      "topic": "Area & Volume",
+      "difficulty": 5,
       "type": "short-numeric",
-      "prompt": "Find the average of 6, 9, 12 and 13.",
-      "answer": 10,
+      "prompt": "A rectangular tray is completely covered, with no gaps or overlaps, by 5 identical rectangular cards. In the top row, 2 cards lie flat side by side, each with its long edge horizontal. Directly below them, 3 cards stand side by side, each with its long edge vertical. The top row and the bottom row have exactly the same width. Each card is 18 cm long. What is the area of the tray, in cm^2?",
+      "answer": "1080",
       "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
+        "rule": "fraction-equivalent",
         "accepted": [
-          "10"
+          "1080"
         ]
       }
     },
     {
-      "id": "pm-avg-09",
-      "topic": "Average",
-      "difficulty": 3,
-      "type": "mcq",
-      "prompt": "The average of 4 numbers is 15. What is their total?",
-      "options": [
-        "15",
-        "19",
-        "60",
-        "64"
-      ],
-      "answer": 2,
-      "check": {
-        "rule": "exact",
-        "accepted": [
-          "2"
-        ]
-      }
-    },
-    {
-      "id": "pm-avg-10",
-      "topic": "Average",
+      "id": "pm-area-10",
+      "topic": "Area & Volume",
       "difficulty": 4,
       "type": "short-numeric",
-      "prompt": "The average of 6 numbers is 8. One of the numbers is removed and the average of the remaining 5 numbers becomes 7. What was the removed number?",
-      "answer": 13,
+      "prompt": "Container A has a base measuring 25 cm by 16 cm and is filled with water to a depth of 20 cm. All this water is poured into an empty container B, where it reaches a depth of 16 cm. Container B has a rectangular base that is 20 cm wide. What is the length of the base of container B, in cm?",
+      "answer": "25",
       "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "25"
+        ]
+      }
+    },
+    {
+      "id": "pm-whole-01",
+      "topic": "Whole Numbers",
+      "difficulty": 3,
+      "type": "short-numeric",
+      "prompt": "A car park contains only cars and motorcycles. Each car has 4 wheels and each motorcycle has 2 wheels. Altogether there are 30 vehicles and 96 wheels. How many of the vehicles are cars?",
+      "answer": "18",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "18"
+        ]
+      }
+    },
+    {
+      "id": "pm-whole-02",
+      "topic": "Whole Numbers",
+      "difficulty": 4,
+      "type": "short-numeric",
+      "prompt": "In a 20-question quiz, 4 points are awarded for each correct answer and 1 point is deducted for each wrong answer. Ravi answered every question and scored 45 points. How many questions did he answer correctly?",
+      "answer": "13",
+      "check": {
+        "rule": "fraction-equivalent",
         "accepted": [
           "13"
         ]
       }
     },
     {
-      "id": "pm-avg-11",
-      "topic": "Average",
-      "difficulty": 5,
-      "type": "short-numeric",
-      "prompt": "The average mass of 3 boys is 42 kg. When a 4th boy joins them, the average mass of all 4 boys becomes 40 kg. What is the mass of the 4th boy, in kg?",
-      "answer": 34,
+      "id": "pm-whole-03",
+      "topic": "Whole Numbers",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "A teacher shares a bag of pencils equally among her pupils. If she gives each pupil 5 pencils, she has 8 pencils left over. If she gives each pupil 7 pencils, she is 6 pencils short. How many pupils are there?",
+      "options": [
+        "1",
+        "7",
+        "2",
+        "43"
+      ],
+      "answer": 1,
       "check": {
-        "rule": "tolerance",
-        "tolerance": 0.001,
+        "rule": "exact",
         "accepted": [
-          "34"
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "pm-whole-04",
+      "topic": "Whole Numbers",
+      "difficulty": 4,
+      "type": "mcq",
+      "prompt": "A shopkeeper packs sweets into gift bags. If he puts 12 sweets in each bag, 10 sweets are left over. If he puts 15 sweets in each bag, he is 8 sweets short of filling all the bags. How many sweets does he have altogether?",
+      "options": [
+        "72",
+        "6",
+        "82",
+        "98"
+      ],
+      "answer": 2,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "2"
+        ]
+      }
+    },
+    {
+      "id": "pm-whole-05",
+      "topic": "Whole Numbers",
+      "difficulty": 4,
+      "type": "short-numeric",
+      "prompt": "A box holds between 100 and 150 marbles. The number of marbles is a multiple of 7. When the marbles are shared into groups of 5, there are 2 left over. When they are shared into groups of 4, there are 3 left over. How many marbles are in the box?",
+      "answer": "147",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "147"
+        ]
+      }
+    },
+    {
+      "id": "pm-whole-06",
+      "topic": "Whole Numbers",
+      "difficulty": 5,
+      "type": "mcq",
+      "prompt": "A shop sells juice boxes in three ways: a pack of 8 for $7, a pack of 5 for $4, or singly for $1 each. Rahim needs exactly 15 juice boxes for a party. What is the least amount of money he can spend, in dollars?",
+      "options": [
+        "13",
+        "14",
+        "15",
+        "12"
+      ],
+      "answer": 3,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "3"
+        ]
+      }
+    },
+    {
+      "id": "pm-whole-07",
+      "topic": "Whole Numbers",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "A factory made 400 toy cars in January. In February its output rose by 15% compared with January. In March its output fell by 20% compared with February. How many toy cars did the factory make in March?",
+      "options": [
+        "460",
+        "368",
+        "380",
+        "320"
+      ],
+      "answer": 1,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "pm-whole-08",
+      "topic": "Whole Numbers",
+      "difficulty": 4,
+      "type": "short-numeric",
+      "prompt": "A charity had a number of volunteers. In spring the number rose by 20%. In summer it fell by 10% compared with the spring figure, leaving 648 volunteers. How many more volunteers did the charity have in summer than it had at the very start?",
+      "answer": "48",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "48"
+        ]
+      }
+    },
+    {
+      "id": "pm-whole-09",
+      "topic": "Whole Numbers",
+      "difficulty": 3,
+      "type": "short-numeric",
+      "prompt": "In a jar, the ratio of red marbles to blue marbles is 3 : 4, and the ratio of blue marbles to green marbles is 8 : 1. There are 24 blue marbles. How many marbles are in the jar altogether?",
+      "answer": "45",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "45"
+        ]
+      }
+    },
+    {
+      "id": "pm-whole-10",
+      "topic": "Whole Numbers",
+      "difficulty": 5,
+      "type": "mcq",
+      "prompt": "In a choir, the ratio of sopranos to altos is 3 : 4, and the ratio of altos to basses is 2 : 1. The choir has fewer than 100 singers in total. Also, exactly 25% of the sopranos wear glasses, and that is a whole number of singers. What is the greatest possible total number of singers in the choir?",
+      "options": [
+        "99",
+        "96",
+        "72",
+        "36"
+      ],
+      "answer": 2,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "2"
         ]
       }
     }
