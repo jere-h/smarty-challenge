@@ -4,13 +4,15 @@
 // works with the network disabled. Everything the app needs (shell + question bank) is precached
 // and served cache-first.
 //
-// Versioning: the cache name carries QUESTION_BANK_VERSION. Bumping it (a new bank ships) mints a
-// fresh cache on install; `activate` then deletes every stale-version cache and claims open clients,
-// so cached players pick up the new bank on next activate WITHOUT breaking the current offline
-// session (the old cache keeps serving until the new one is fully installed).
-
-const QUESTION_BANK_VERSION = 1;
-const CACHE_NAME = 'smarty-v' + QUESTION_BANK_VERSION;
+// Versioning: CACHE_VERSION is a plain integer bumped in EVERY batch that changes ANY precached
+// file (Invariant 3) — bumping it mints a fresh cache on install; `activate` then deletes every
+// stale-version cache and claims open clients, so cached players pick up the change on next
+// activate WITHOUT breaking the current offline session (the old cache keeps serving until the
+// new one is fully installed). This replaces the old QUESTION_BANK_VERSION-derived name: cache
+// freshness and the question bank's own version (see questions.json's "bankVersion") are separate
+// concerns now — a batch can ship with no bank change at all and still needs a cache bump.
+const CACHE_VERSION = 2; // Batch A. B -> 3, C -> 4, D -> 5, E -> 6.
+const CACHE_NAME = 'smarty-v' + CACHE_VERSION;
 // Caches minted under the app's former name; still deleted on activate so
 // devices that installed before the rename don't keep a stale copy around.
 const LEGACY_CACHE_PREFIX = 'psle-v';
@@ -29,6 +31,7 @@ const PRECACHE_URLS = [
   './validation.js',
   './render.js',
   './share.js',
+  './storage.js',
   './questions.json',
   './manifest.webmanifest'
 ];
@@ -39,7 +42,7 @@ const PRECACHE_URLS = [
 async function postReady() {
   const clientList = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
   for (const client of clientList) {
-    client.postMessage({ type: 'SW_READY', version: QUESTION_BANK_VERSION });
+    client.postMessage({ type: 'SW_READY', version: CACHE_VERSION });
   }
 }
 

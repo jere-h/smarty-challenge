@@ -2,25 +2,31 @@
 //
 // Owns the in-memory Session, loads the bundled question bank, wires DOM
 // events, and orchestrates validation -> sampler -> marker -> render -> share.
-// Also drives the "Ready for offline" indicator from the service worker's
-// readiness message. No persistence beyond the service-worker asset cache.
+// Also drives the "Ready for offline" indicator from service-worker readiness
+// AND live navigator.onLine transitions, and autosaves/resumes the in-progress
+// paper (and the most recently completed one) via storage.js — the only
+// module besides storage.js that ever names localStorage indirectly (through
+// storage.js's exports; app.js never calls localStorage itself).
 
 import { parseSeed } from './validation.js';
 import { generatePaper } from './sampler.js';
 import { mark } from './marker.js';
 import { renderSeedScreen, renderQuiz, renderResults } from './render.js';
 import { buildSummary, shareWhatsApp, shareTelegram, copyToClipboard } from './share.js';
+import { loadState, saveState, clearSession } from './storage.js';
 
 // ---------------------------------------------------------------------------
-// In-memory state (Session). Held only here; nothing is persisted by app.js.
+// In-memory state (Session). The paper itself lives only here — it is never
+// persisted (storage.js keeps just the seed + answers; the paper is
+// regenerated deterministically from the seed on restore).
 // ---------------------------------------------------------------------------
 
-/** @type {{schemaVersion:number, subject:string, questions:Array}|null} */
+/** @type {{schemaVersion:number, bankVersion?:number, subject:string, questions:Array}|null} */
 let bank = null;
 
 /**
  * Session { seed, paper, answers, startedAt, submittedAt }
- * @type {{seed:number, paper:Array, answers:Record<string,string|number|null>, startedAt:number, submittedAt?:number}|null}
+ * @type {{seed:number, paper:Array, answers:Record<string,string|number|null>, startedAt:number|null, submittedAt?:number}|null}
  */
 let session = null;
 
@@ -30,7 +36,18 @@ let lastResult = null;
 /** Guards against double-marking (submit button + form submit both firing). */
 let resultsShown = false;
 
+/** The persisted State (Section 1 contract) — the in-memory mirror of localStorage. */
+let persisted = loadState();
+
+/** Debounce handle for autosave writes (<=1 write/500ms, Invariant per A2). */
+let saveTimer = null;
+const SAVE_DEBOUNCE_MS = 500;
+
+/** Service-worker readiness, combined with navigator.onLine to drive the A1 4-state indicator. */
+let swReady = false;
+
 const PAPER_SIZE = 20;
+const RESTORE_WINDOW_MS = 30 * 60 * 1000; // 30 minutes (A2 results-restore window)
 
 // ---------------------------------------------------------------------------
 // Screen state machine
@@ -56,6 +73,12 @@ async function loadBank() {
   const res = await fetch(url);
   if (!res.ok) throw new Error('Could not load the question bank (' + res.status + ').');
   return res.json();
+}
+
+// A6 — the bank's own version, displayed wherever the seed is displayed so a
+// cached device holding a stale bank can be spotted before phones compare.
+function getBankVersion() {
+  return bank && bank.bankVersion != null ? bank.bankVersion : 1;
 }
 
 /**
@@ -104,6 +127,30 @@ function buildTopicBuckets(theBank, target) {
   return count;
 }
 
+// Build the SAME paper a fresh Start would (reused by handleStart, session
+// resume, and results-restore) — no duplicated sampling logic (A2).
+function buildPaperForSeed(seedNum) {
+  if (!bank) throw new Error('Question bank not loaded.');
+  const buckets = buildTopicBuckets(bank, PAPER_SIZE);
+  return generatePaper(seedNum, bank, buckets);
+}
+
+// ---------------------------------------------------------------------------
+// Persistence helpers (app.js is the only module that calls storage.js)
+// ---------------------------------------------------------------------------
+
+function persistNow() {
+  saveState(persisted);
+}
+
+function scheduleAutosave() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = window.setTimeout(() => {
+    saveTimer = null;
+    persistNow();
+  }, SAVE_DEBOUNCE_MS);
+}
+
 // ---------------------------------------------------------------------------
 // Flow: Seed -> Quiz
 // ---------------------------------------------------------------------------
@@ -116,6 +163,17 @@ function readSeedInput() {
 function setSeedError(msg) {
   const el = document.getElementById('seed-error');
   if (el) el.textContent = msg || '';
+}
+
+function hideResumeNotice() {
+  const el = document.getElementById('resume-notice');
+  if (el) el.hidden = true;
+}
+
+function showResumeNotice() {
+  const el = document.getElementById('resume-notice');
+  if (!el) return;
+  el.hidden = false;
 }
 
 function handleStart() {
@@ -133,24 +191,42 @@ function handleStart() {
 
   let paper;
   try {
-    const buckets = buildTopicBuckets(bank, PAPER_SIZE);
-    paper = generatePaper(parsed.seed, bank, buckets);
+    paper = buildPaperForSeed(parsed.seed);
   } catch (err) {
     setSeedError('Could not build a paper from this bank: ' + (err && err.message ? err.message : String(err)));
     return;
   }
 
+  const startedAt = Date.now();
   session = {
     seed: parsed.seed,
     paper,
     answers: Object.create(null),
-    startedAt: Date.now(),
+    startedAt,
   };
   lastResult = null;
   resultsShown = false;
 
-  renderQuiz(paper);
+  // A2 — write the fresh in-progress paper to the autosave slot immediately
+  // (not debounced: this is a state transition, not a keystroke).
+  persisted.session = { seed: parsed.seed, startedAt, answers: {}, party: null };
+  persistNow();
+
+  hideResumeNotice();
+  renderQuiz(paper, session.seed, getBankVersion());
   showScreen('screen-quiz');
+}
+
+function handleRestart() {
+  // "New paper" — clears the autosaved session only; lastGame/history stay.
+  clearSession();
+  persisted.session = null;
+  session = null;
+  lastResult = null;
+  resultsShown = false;
+  hideResumeNotice();
+  renderSeedScreen();
+  showScreen('screen-seed');
 }
 
 // ---------------------------------------------------------------------------
@@ -179,6 +255,23 @@ function collectAnswers(paper) {
   return answers;
 }
 
+// A2 — autosave: mirror the live form into both the in-memory session and the
+// persisted session, debounced to <=1 write/500ms. Called from delegated
+// `input` (keystrokes) and `change` (radios, and text-field blur) listeners.
+function autosaveTick() {
+  if (!session) return;
+  session.answers = collectAnswers(session.paper);
+  if (persisted.session) {
+    const out = {};
+    for (const k of Object.keys(session.answers)) {
+      const v = session.answers[k];
+      if (v !== null && v !== undefined && v !== '') out[k] = v;
+    }
+    persisted.session.answers = out;
+  }
+  scheduleAutosave();
+}
+
 function handleSubmit() {
   if (!session || resultsShown) return;
   resultsShown = true;
@@ -186,12 +279,199 @@ function handleSubmit() {
   const answers = collectAnswers(session.paper);
   session.answers = answers;
   session.submittedAt = Date.now();
-  const elapsedMs = Math.max(0, session.submittedAt - session.startedAt);
+  const elapsedMs = Math.max(0, session.submittedAt - (session.startedAt || session.submittedAt));
 
   lastResult = mark(session.paper, answers, elapsedMs);
 
+  // A2 — fill lastGame, append to history (cap 50), clear the in-progress session.
+  const cleanAnswers = {};
+  for (const k of Object.keys(answers)) {
+    const v = answers[k];
+    if (v !== null && v !== undefined && v !== '') cleanAnswers[k] = v;
+  }
+  persisted.lastGame = {
+    finishedAt: session.submittedAt,
+    seed: session.seed,
+    solo: { answers: cleanAnswers, elapsedMs },
+    party: null,
+  };
+  persisted.history = Array.isArray(persisted.history) ? persisted.history : [];
+  persisted.history.unshift({
+    seed: session.seed,
+    total: lastResult.total,
+    maxTotal: lastResult.maxTotal,
+    elapsedMs,
+    finishedAt: session.submittedAt,
+    player: null,
+  });
+  if (persisted.history.length > 50) persisted.history.length = 50;
+  persisted.session = null;
+  if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+  persistNow();
+
+  hideResumeNotice();
   renderResults(lastResult, session.seed);
   showScreen('screen-results');
+}
+
+// ---------------------------------------------------------------------------
+// Flow: Resume + results-restore (A2)
+// ---------------------------------------------------------------------------
+
+function paperQuestionIds(paper) {
+  const ids = new Set();
+  for (const q of paper) if (q && q.id != null) ids.add(String(q.id));
+  return ids;
+}
+
+// Every stored answer key must resolve to a question in the regenerated
+// paper — otherwise the stored data belongs to a bank the device no longer
+// has (Restore-failure rule).
+function answersMatchPaper(answers, paper) {
+  if (!answers || typeof answers !== 'object') return true;
+  const ids = paperQuestionIds(paper);
+  for (const key of Object.keys(answers)) {
+    if (!ids.has(key)) return false;
+  }
+  return true;
+}
+
+function cssEscapeName(name) {
+  return window.CSS && CSS.escape ? CSS.escape(name) : name;
+}
+
+// Re-apply stored answer values into the live quiz form: radios get checked
+// (and a real `change` event dispatched so the single delegated listener
+// re-applies .option--selected), text fields get their value set directly.
+function restoreAnswersIntoForm(paper, answers) {
+  const form = document.getElementById('quiz-form');
+  if (!form || !answers) return;
+  paper.forEach((q) => {
+    const qid = q && q.id != null ? String(q.id) : null;
+    if (!qid) return;
+    const raw = answers[qid];
+    if (raw === undefined || raw === null || raw === '') return;
+    const fieldName = 'q-' + qid;
+
+    if (q.type === 'mcq') {
+      const radios = form.querySelectorAll(
+        '.option__input[name="' + cssEscapeName(fieldName) + '"]');
+      radios.forEach((radio) => {
+        if (radio.value === String(raw)) {
+          radio.checked = true;
+          try {
+            radio.dispatchEvent(new Event('change', { bubbles: true }));
+          } catch (_err) {
+            // Older engines without a working Event constructor — the radio
+            // is still checked, just without the visual reflection.
+          }
+        }
+      });
+    } else {
+      const field = form.elements[fieldName];
+      if (field) field.value = String(raw);
+    }
+  });
+}
+
+// Attempt to resume an in-progress paper. Returns true on success (screen
+// already shown), false if there was nothing valid to resume.
+function tryRestoreSession(sessionData) {
+  if (!sessionData || typeof sessionData !== 'object') return false;
+
+  // Batch D extends this branch to restore to the current player's
+  // interstitial instead; Batch A never writes a non-null party, so this is
+  // effectively unreachable today, but guarded defensively.
+  if (sessionData.party) return false;
+
+  let paper;
+  try {
+    paper = buildPaperForSeed(sessionData.seed);
+  } catch (_err) {
+    return false; // regeneration failure -> drop (Restore-failure rule)
+  }
+
+  const answers = sessionData.answers && typeof sessionData.answers === 'object'
+    ? sessionData.answers
+    : {};
+  if (!answersMatchPaper(answers, paper)) return false; // stale-bank mismatch -> drop
+
+  session = {
+    seed: sessionData.seed,
+    paper,
+    answers: { ...answers },
+    startedAt: typeof sessionData.startedAt === 'number' ? sessionData.startedAt : Date.now(),
+  };
+  lastResult = null;
+  resultsShown = false;
+
+  renderQuiz(paper, session.seed, getBankVersion());
+  restoreAnswersIntoForm(paper, answers);
+  showScreen('screen-quiz');
+  showResumeNotice();
+  return true;
+}
+
+// Attempt to restore the most recently completed paper's results screen.
+// Returns true on success.
+function tryRestoreLastGame(lastGame) {
+  if (!lastGame || typeof lastGame !== 'object') return false;
+  if (!lastGame.solo) return false; // party lastGame is Batch D scope
+
+  let paper;
+  try {
+    paper = buildPaperForSeed(lastGame.seed);
+  } catch (_err) {
+    return false;
+  }
+
+  const answers = lastGame.solo.answers && typeof lastGame.solo.answers === 'object'
+    ? lastGame.solo.answers
+    : {};
+  if (!answersMatchPaper(answers, paper)) return false;
+
+  const elapsedMs = Number(lastGame.solo.elapsedMs) || 0;
+  const result = mark(paper, answers, elapsedMs);
+
+  session = {
+    seed: lastGame.seed,
+    paper,
+    answers: { ...answers },
+    startedAt: null,
+    submittedAt: lastGame.finishedAt,
+  };
+  lastResult = result;
+  resultsShown = true;
+
+  renderResults(result, lastGame.seed);
+  showScreen('screen-results');
+  return true;
+}
+
+// Boot-time restore, run only after a successful bank load (a bank LOAD
+// failure must leave stored state completely untouched).
+function attemptRestore() {
+  if (persisted.session) {
+    const restored = tryRestoreSession(persisted.session);
+    if (restored) return;
+    // Regeneration/mismatch failure: drop the unusable session silently.
+    persisted.session = null;
+    persistNow();
+  }
+
+  if (persisted.lastGame) {
+    const withinWindow = Date.now() - Number(persisted.lastGame.finishedAt) <= RESTORE_WINDOW_MS;
+    if (withinWindow) {
+      const restored = tryRestoreLastGame(persisted.lastGame);
+      if (restored) return;
+      // Only a bank mismatch drops it; simply being outside the window (or a
+      // party lastGame in this batch) leaves it stored and boots to seed.
+      if (persisted.lastGame.solo) {
+        persisted.lastGame = null;
+        persistNow();
+      }
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -210,7 +490,7 @@ function flashButton(btn, msg) {
 
 function handleShareClick(btn) {
   if (!session || !lastResult) return;
-  const text = buildSummary(session.seed, lastResult);
+  const text = buildSummary(session.seed, lastResult, getBankVersion());
 
   if (btn.id === 'share-whatsapp') {
     shareWhatsApp(text);
@@ -226,18 +506,48 @@ function handleShareClick(btn) {
 }
 
 // ---------------------------------------------------------------------------
-// "Ready for offline" indicator, driven by service-worker readiness.
+// A1 — "Ready for offline" 4-state indicator: SW readiness x navigator.onLine.
 // ---------------------------------------------------------------------------
 
-function markOfflineReady() {
+const OFFLINE_COPY = {
+  notReadyOnline: 'Getting ready for offline…',
+  notReadyOffline: 'Not cached yet — open this app on wifi first.',
+  readyOnline: 'Ready for offline — flight mode is fine.',
+  readyOffline: 'Offline and ready to play.',
+};
+
+function isOnline() {
+  return typeof navigator === 'undefined' || navigator.onLine !== false;
+}
+
+function currentOfflineCopy() {
+  const online = isOnline();
+  if (swReady) return online ? OFFLINE_COPY.readyOnline : OFFLINE_COPY.readyOffline;
+  return online ? OFFLINE_COPY.notReadyOnline : OFFLINE_COPY.notReadyOffline;
+}
+
+function updateOfflineIndicator() {
   const el = document.getElementById('offline-indicator');
   if (!el) return;
-  el.classList.add('offline-indicator--ready');
-  el.setAttribute('data-ready', 'true');
-  const label = el.querySelector('.offline-indicator__label');
+  el.classList.toggle('offline-indicator--ready', swReady);
+  el.setAttribute('data-ready', swReady ? 'true' : 'false');
+  // Target .offline-indicator__text — the class index.html actually ships
+  // (the previous code looked for .offline-indicator__label, which never
+  // matched anything, so the pill was stuck on its loading copy forever).
+  const label = el.querySelector('.offline-indicator__text');
   if (label) {
-    label.textContent = 'Ready for offline. You can go without wifi now.';
+    label.textContent = currentOfflineCopy();
   }
+}
+
+function markOfflineReady() {
+  swReady = true;
+  updateOfflineIndicator();
+}
+
+function wireOnlineOffline() {
+  window.addEventListener('online', updateOfflineIndicator);
+  window.addEventListener('offline', updateOfflineIndicator);
 }
 
 function wireServiceWorker() {
@@ -282,6 +592,16 @@ function wireEvents() {
       handleSubmit();
       return;
     }
+    if (target.closest('#restart-btn')) {
+      event.preventDefault();
+      handleRestart();
+      return;
+    }
+    if (target.closest('.resume-notice__dismiss')) {
+      event.preventDefault();
+      hideResumeNotice();
+      return;
+    }
     const shareBtn = target.closest('#share-whatsapp, #share-telegram, #copy-summary');
     if (shareBtn) {
       event.preventDefault();
@@ -297,18 +617,32 @@ function wireEvents() {
     }
   });
 
-  // Reflect MCQ selection onto its .option wrapper for styling; harmless if
-  // render.js already toggles it (idempotent, keyed off the checked state).
+  // A4 — the ONLY listener that reflects MCQ selection onto its .option
+  // wrapper (render.js's former per-group listener was removed, so this is
+  // now the single code path). Also drives A2 autosave for radios (and any
+  // change on a text field, which fires on blur).
   document.addEventListener('change', (event) => {
     const el = event.target;
-    if (el && el.classList && el.classList.contains('option__input') && el.name) {
+    if (!el || !el.name || el.name.indexOf('q-') !== 0) return;
+
+    if (el.classList && el.classList.contains('option__input')) {
       const group = document.querySelectorAll(
-        '.option__input[name="' + (window.CSS && CSS.escape ? CSS.escape(el.name) : el.name) + '"]');
+        '.option__input[name="' + cssEscapeName(el.name) + '"]');
       group.forEach((inp) => {
         const wrap = inp.closest ? inp.closest('.option') : null;
         if (wrap) wrap.classList.toggle('option--selected', inp.checked);
       });
     }
+
+    autosaveTick();
+  });
+
+  // A2 — text fields fire `change` only on blur; `input` is what captures
+  // keystrokes so a dropped session never loses more than ~500ms of typing.
+  document.addEventListener('input', (event) => {
+    const el = event.target;
+    if (!el || !el.name || el.name.indexOf('q-') !== 0) return;
+    autosaveTick();
   });
 }
 
@@ -320,13 +654,19 @@ async function boot() {
   renderSeedScreen();
   wireEvents();
   wireServiceWorker();
+  wireOnlineOffline();
+  updateOfflineIndicator();
   showScreen('screen-seed');
 
   try {
     bank = await loadBank();
   } catch (err) {
     setSeedError(err && err.message ? err.message : 'Could not load the question bank.');
+    // A bank LOAD failure preserves stored state untouched — no restore attempt.
+    return;
   }
+
+  attemptRestore();
 }
 
 if (document.readyState === 'loading') {

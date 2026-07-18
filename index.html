@@ -50,7 +50,7 @@
 
           <div class="offline-indicator" id="offline-indicator" role="status" aria-live="polite">
             <span class="offline-indicator__dot" aria-hidden="true"></span>
-            <span class="offline-indicator__text">Loading questions&hellip;</span>
+            <span class="offline-indicator__text">Getting ready for offline&hellip;</span>
           </div>
           <p class="offline-note">
             Open this app once while you have wifi. After that it works with the
@@ -66,7 +66,12 @@
       <div class="screen__head">
         <p class="eyebrow">Step 2 of 3</p>
         <h2 id="screen-quiz-title" class="screen__title">Your 20 questions</h2>
-        <p class="screen__lead" id="quiz-meta">Seed <span class="mono" id="quiz-seed">1234</span> &middot; answer what you can, blanks count as wrong.</p>
+        <p class="screen__lead" id="quiz-meta">Seed <span class="mono" id="quiz-seed">1234</span> &middot; bank v<span class="mono" id="quiz-bank-version">1</span> &middot; answer what you can, blanks count as wrong.</p>
+      </div>
+
+      <div id="resume-notice" class="resume-notice" role="status" aria-live="polite" hidden>
+        <span class="resume-notice__text">Resumed your paper &mdash; clock kept running.</span>
+        <button class="btn btn--ghost resume-notice__dismiss" type="button">Dismiss</button>
       </div>
 
       <form id="quiz-form">

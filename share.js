@@ -28,18 +28,21 @@ function buildGrid(perQuestion) {
   return rows.join('\n');
 }
 
-// buildSummary(seed, result) -> string
+// buildSummary(seed, result, bankVersion) -> string
 // Spoiler-free: seed, score, time, and correctness grid only. No prompts,
-// no options, no answers ever enter this string.
-export function buildSummary(seed, result) {
+// no options, no answers ever enter this string. `bankVersion` is OPTIONAL
+// (defaults to 1) so a mismatched-bank device can be spotted before two
+// phones compare scores (A6) — it never carries any answer/prompt data.
+export function buildSummary(seed, result, bankVersion) {
   const total = result && typeof result.total === 'number' ? result.total : 0;
   const maxTotal = result && typeof result.maxTotal === 'number' ? result.maxTotal : 20;
   const elapsed = formatElapsed(result ? result.elapsedMs : 0);
   const grid = buildGrid(result ? result.perQuestion : []);
+  const bank = bankVersion != null ? bankVersion : 1;
 
   const lines = [
     'Smarty Challenge',
-    `Seed ${seed}`,
+    `Seed ${seed} · bank v${bank}`,
     `Score ${total}/${maxTotal}  Time ${elapsed}`,
     '',
     grid,

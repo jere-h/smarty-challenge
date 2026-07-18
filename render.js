@@ -1,9 +1,9 @@
 // render.js — screen painters for the Smarty Challenge.
 //
 // Exports (per shared contract):
-//   renderSeedScreen()               -> void
-//   renderQuiz(paper)                -> void  (MCQ + short-numeric inputs)
-//   renderResults(result, seed)      -> void  (total, per-topic, emoji grid, elapsed)
+//   renderSeedScreen()                          -> void
+//   renderQuiz(paper, seed, bankVersion)        -> void  (MCQ + short-numeric inputs)
+//   renderResults(result, seed)                 -> void  (total, per-topic, emoji grid, elapsed)
 //
 // This module only paints DOM. It never reads the network, never touches
 // storage, and never imports siblings — app.js owns the Session and wires the
@@ -198,21 +198,45 @@ export function renderSeedScreen() {
     pill.textContent = '';
     pill.appendChild(el('span', { class: 'offline-indicator__dot', attrs: { 'aria-hidden': 'true' } }));
     pill.appendChild(iconOffline(16));
+    // State-1 copy ("not ready yet, online") — app.js drives the real state from
+    // here on via #offline-indicator's .offline-indicator__text (see A1); this is
+    // only ever seen if #offline-indicator was missing from the static shell.
     pill.appendChild(
-      el('span', {
-        text: 'Open once on wifi before the dead-time window to cache for offline play.'
-      })
+      el('span', { class: 'offline-indicator__text', text: 'Getting ready for offline…' })
     );
   }
 }
 
+/* ------------------------------------------------------------------ *
+ * A3 — per-question input mode: a question whose accepted forms include a
+ * fraction needs a text keyboard (iOS's decimal keypad has no '/' key).
+ * ------------------------------------------------------------------ */
+
+function isFractionCapable(q) {
+  const check = q && q.check;
+  if (!check) return false;
+  if (check.rule === 'fraction-equivalent') return true;
+  if (Array.isArray(check.accepted)) {
+    return check.accepted.some((v) => typeof v === 'string' && v.indexOf('/') !== -1);
+  }
+  return false;
+}
+
 /* ================================================================== *
- * renderQuiz(paper)
+ * renderQuiz(paper, seed, bankVersion)
  * ================================================================== */
 
-export function renderQuiz(paper) {
+export function renderQuiz(paper, seed, bankVersion) {
   const screen = document.getElementById('screen-quiz');
   showScreen('screen-quiz');
+
+  // A6 — the seed AND the bank version travel together wherever the seed is
+  // displayed, so a cached device with a stale bank can be spotted before two
+  // phones compare scores.
+  const seedEl = document.getElementById('quiz-seed');
+  if (seedEl && seed != null) seedEl.textContent = String(seed);
+  const bankEl = document.getElementById('quiz-bank-version');
+  if (bankEl && bankVersion != null) bankEl.textContent = String(bankVersion);
 
   const questions = Array.isArray(paper) ? paper : [];
 
@@ -281,26 +305,21 @@ export function renderQuiz(paper) {
         options.appendChild(label);
       });
 
-      // Reflect selection into .option--selected for visible feedback.
-      options.addEventListener('change', function () {
-        const labels = options.querySelectorAll('.option');
-        labels.forEach(function (lbl) {
-          const inp = lbl.querySelector('.option__input');
-          lbl.classList.toggle('option--selected', !!(inp && inp.checked));
-        });
-      });
-
+      // Selection styling (.option--selected) is reflected by app.js's single
+      // delegated `change` listener (A4) — no per-group listener here, so
+      // there is exactly one code path applying the class.
       block.appendChild(options);
     } else {
       const wrap = el('div', { class: 'question__field' });
       const inputId = fieldName + '-input';
+      const fractionCapable = isFractionCapable(q);
       const numInput = el('input', {
         class: 'question__input',
         attrs: {
           type: 'text',
           id: inputId,
           name: fieldName,
-          inputmode: 'decimal',
+          inputmode: fractionCapable ? 'text' : 'decimal',
           autocomplete: 'off',
           autocapitalize: 'off',
           autocorrect: 'off',
@@ -310,6 +329,16 @@ export function renderQuiz(paper) {
         }
       });
       wrap.appendChild(numInput);
+      if (fractionCapable) {
+        // Generic hint string only (Invariant 4) — never derived from the
+        // question's own answer/accepted values.
+        wrap.appendChild(
+          el('p', {
+            class: 'question__hint',
+            text: 'Fraction (like 3/4) or decimal — both fine.'
+          })
+        );
+      }
       block.appendChild(wrap);
     }
 

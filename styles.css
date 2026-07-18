@@ -439,6 +439,37 @@ button {
 }
 
 /* ------------------------------------------------------------ Quiz screen */
+
+/* A2 — dismissible "resumed your paper" notice. Sits above #quiz-form;
+   default-hidden via the `hidden` attribute (specificity-guarded below so it
+   actually wins over the flex display rule). Tinted with the accent token so
+   it reads consistently in both color schemes without a separate dark rule. */
+.resume-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius);
+  color: var(--color-fg);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.resume-notice[hidden] {
+  display: none;
+}
+
+.resume-notice__text {
+  flex: 1 1 auto;
+}
+
+.resume-notice__dismiss {
+  flex: none;
+}
+
 #quiz-form {
   display: flex;
   flex-direction: column;
@@ -495,6 +526,16 @@ button {
 
 .question__field {
   margin-top: var(--space-4);
+}
+
+/* A3 — generic hint under fraction-capable short-numeric inputs. Uses the
+   shared muted-text token, so it reads correctly in both color schemes
+   without any extra dark-mode override. */
+.question__hint {
+  margin-top: var(--space-2);
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
 }
 
 .question__input {
