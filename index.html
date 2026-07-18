@@ -92,15 +92,17 @@
       <div class="screen__head">
         <p class="eyebrow">Step 3 of 3</p>
         <h2 id="screen-results-title" class="screen__title">Your result</h2>
-        <p class="screen__lead">Seed <span class="mono" id="results-seed">1234</span> &middot; compare with your friends.</p>
+        <p class="screen__lead">Show your screen across the aisle &mdash; compare with your friends.</p>
       </div>
 
       <div id="results">
-        <!-- render.js injects .results-layout, .grid, and .share here -->
+        <!-- render.js injects the score card, .results-layout, .grid,
+             the answer-review panel, and .share here -->
       </div>
 
       <div class="results-actions">
-        <button class="btn btn--ghost" id="restart-btn" type="button">New paper</button>
+        <button class="btn btn--primary" id="rematch-btn" type="button">Rematch: new seed</button>
+        <button class="btn btn--ghost" id="same-seed-btn" type="button">Same seed again</button>
       </div>
     </section>
 

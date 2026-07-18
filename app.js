@@ -342,9 +342,12 @@ function handleStart() {
   startQuizTimer(); // B1 — started when the quiz screen shows
 }
 
-function handleRestart() {
-  // "New paper" — clears the autosaved session only; lastGame/history stay.
-  stopQuizTimer(); // B1 — cleared on restart
+// C3 — shared teardown for both results actions: clears the autosaved
+// session only (lastGame/history stay, same rule A2 gave "New paper") and
+// returns to the seed screen. Callers apply their own seed-field treatment
+// afterward (spin a fresh one, or keep the one just played).
+function goToSeedScreenFromResults() {
+  stopQuizTimer(); // B1 — defensive; should already be stopped by finalizeSubmit
   resetSubmitGuard();
   clearSession();
   persisted.session = null;
@@ -354,6 +357,28 @@ function handleRestart() {
   hideResumeNotice();
   renderSeedScreen();
   showScreen('screen-seed');
+}
+
+// #rematch-btn — "Rematch: new seed": spins a fresh seed (reusing B3's
+// spin logic so there is exactly one place that generates one), prefills it,
+// and focuses it to read aloud.
+function handleRematch() {
+  goToSeedScreenFromResults();
+  handleSpinSeed();
+}
+
+// #same-seed-btn — "Same seed again": returns to the seed screen with the
+// just-played seed kept (not spun), focused so it can be read aloud again.
+function handleSameSeed() {
+  const playedSeed = session ? session.seed : null;
+  goToSeedScreenFromResults();
+  const input = document.getElementById('seed-input');
+  if (input && playedSeed != null) {
+    input.value = String(playedSeed);
+    setSeedError('');
+    input.focus();
+    try { input.select(); } catch (_err) { /* selection unsupported — focus alone still helps */ }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -474,8 +499,13 @@ function finalizeSubmit(answers) {
 
   hideResumeNotice();
   resetSubmitGuard();
-  renderResults(lastResult, session.seed);
+  renderResults(lastResult, session.seed, {
+    paper: session.paper,
+    answers: session.answers,
+    bankVersion: getBankVersion(),
+  });
   showScreen('screen-results');
+  updateShareOnlineState(); // C4 — reconcile messenger buttons against current connectivity
 }
 
 // ---------------------------------------------------------------------------
@@ -612,8 +642,13 @@ function tryRestoreLastGame(lastGame) {
   stopQuizTimer(); // B1 — defensive; no timer should be running at boot
   resetSubmitGuard();
 
-  renderResults(result, lastGame.seed);
+  renderResults(result, lastGame.seed, {
+    paper,
+    answers,
+    bankVersion: getBankVersion(),
+  });
   showScreen('screen-results');
+  updateShareOnlineState(); // C4 — reconcile messenger buttons against current connectivity
   return true;
 }
 
@@ -641,6 +676,22 @@ function attemptRestore() {
       }
     }
   }
+}
+
+// ---------------------------------------------------------------------------
+// C2 — spoiler-gated answer review toggle.
+// ---------------------------------------------------------------------------
+
+// #reveal-answers-btn: expands/collapses #answer-review in place. render.js
+// always mounts it collapsed (a fresh renderResults() call rebuilds both
+// nodes from scratch, so there is nothing to reset here on a new game).
+function handleToggleAnswerReview(btn) {
+  const review = document.getElementById('answer-review');
+  if (!review || !btn) return;
+  const nowHidden = !review.hidden;
+  review.hidden = nowHidden;
+  btn.setAttribute('aria-expanded', String(!nowHidden));
+  btn.textContent = nowHidden ? 'Reveal answers' : 'Hide answers';
 }
 
 // ---------------------------------------------------------------------------
@@ -714,9 +765,39 @@ function markOfflineReady() {
   updateOfflineIndicator();
 }
 
+// ---------------------------------------------------------------------------
+// C4 — offline-aware share row: WhatsApp/Telegram are dead links without a
+// network (wa.me / t.me), so they render `disabled` with a visible "needs
+// internet" note whenever navigator.onLine is false, mirroring A1's
+// SW-readiness x online/offline wiring. "Copy summary" is never touched here
+// — it stays enabled regardless of connectivity.
+// ---------------------------------------------------------------------------
+
+function setShareButtonOnlineState(btnId, noteId, online) {
+  const btn = document.getElementById(btnId);
+  if (btn) {
+    btn.disabled = !online;
+    btn.setAttribute('aria-disabled', String(!online));
+  }
+  const note = document.getElementById(noteId);
+  if (note) note.hidden = online;
+}
+
+function updateShareOnlineState() {
+  const online = isOnline();
+  setShareButtonOnlineState('share-whatsapp', 'share-whatsapp-note', online);
+  setShareButtonOnlineState('share-telegram', 'share-telegram-note', online);
+}
+
 function wireOnlineOffline() {
-  window.addEventListener('online', updateOfflineIndicator);
-  window.addEventListener('offline', updateOfflineIndicator);
+  window.addEventListener('online', () => {
+    updateOfflineIndicator();
+    updateShareOnlineState();
+  });
+  window.addEventListener('offline', () => {
+    updateOfflineIndicator();
+    updateShareOnlineState();
+  });
 }
 
 function wireServiceWorker() {
@@ -776,9 +857,19 @@ function wireEvents() {
       handleSpinSeed();
       return;
     }
-    if (target.closest('#restart-btn')) {
+    if (target.closest('#rematch-btn')) {
       event.preventDefault();
-      handleRestart();
+      handleRematch();
+      return;
+    }
+    if (target.closest('#same-seed-btn')) {
+      event.preventDefault();
+      handleSameSeed();
+      return;
+    }
+    if (target.closest('#reveal-answers-btn')) {
+      event.preventDefault();
+      handleToggleAnswerReview(target.closest('#reveal-answers-btn'));
       return;
     }
     if (target.closest('.resume-notice__dismiss')) {

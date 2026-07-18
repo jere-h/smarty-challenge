@@ -3,14 +3,20 @@
 // Exports (per shared contract):
 //   renderSeedScreen()                          -> void
 //   renderQuiz(paper, seed, bankVersion)        -> void  (MCQ + short-numeric inputs)
-//   renderResults(result, seed)                 -> void  (total, per-topic, emoji grid, elapsed)
+//   renderResults(result, seed, extras)         -> void  (score card, per-topic,
+//                                                          emoji grid, answer review)
+//     extras = { paper, answers, bankVersion } — OPTIONAL. When absent, no
+//     answer-review section is rendered at all. When present, `answers` MAY
+//     itself be null to render the review with a correct-answer column only
+//     (Batch D leaderboard use — a per-player answer sheet is out of scope
+//     there even though the data exists).
 //
 // This module only paints DOM. It never reads the network, never touches
 // storage, and never imports siblings — app.js owns the Session and wires the
-// events (Start / Submit / Share). Answers are captured in the live #quiz-form
-// under name="q-<questionId>" controls, which app.js reads at submit time via
-// FormData; render.js additionally reflects the selection into the visible
-// .option--selected state for feedback.
+// events (Start / Submit / Share / Reveal answers / Rematch). Answers are
+// captured in the live #quiz-form under name="q-<questionId>" controls, which
+// app.js reads at submit time via FormData; render.js additionally reflects
+// the selection into the visible .option--selected state for feedback.
 //
 // All icons are self-contained inline SVG drawn in currentColor — no external
 // assets, so the whole loop works offline after one cached load.
@@ -409,7 +415,7 @@ export function renderQuiz(paper, seed, bankVersion) {
 }
 
 /* ================================================================== *
- * renderResults(result, seed)
+ * renderResults(result, seed, extras)
  * ================================================================== */
 
 function formatElapsed(ms) {
@@ -421,7 +427,103 @@ function formatElapsed(ms) {
   return mm + ':' + ss;
 }
 
-export function renderResults(result, seed) {
+// C2 — spoiler-gated answer review display rules.
+// Player's MCQ answer: question.options[Number(value)] (out-of-range/absent
+// => "blank"). Short-numeric: the raw string, or "blank".
+function formatPlayerAnswer(question, rawValue) {
+  const isMcq = question && question.type === 'mcq' && Array.isArray(question.options);
+  if (rawValue === undefined || rawValue === null || rawValue === '') return 'blank';
+  if (isMcq) {
+    const idx = Number(rawValue);
+    if (!Number.isInteger(idx) || idx < 0 || idx >= question.options.length) return 'blank';
+    return String(question.options[idx]);
+  }
+  return String(rawValue);
+}
+
+// Correct answer: MCQ => question.options[question.answer]; short-numeric =>
+// String(question.answer).
+function formatCorrectAnswer(question) {
+  if (!question) return '';
+  const isMcq = question.type === 'mcq' && Array.isArray(question.options);
+  if (isMcq) {
+    const opt = question.options[question.answer];
+    return opt != null ? String(opt) : '';
+  }
+  return String(question.answer);
+}
+
+// Builds the collapsed-by-default #reveal-answers-btn + #answer-review pair.
+// `answers` is the raw answers map (qid -> string) for the player being shown,
+// or null to render the correct-answer column only (Batch D leaderboard use —
+// see contract note at the top of the file). Returns null if there is no
+// paper to review (extras absent or malformed), so callers can skip mounting
+// it entirely.
+function buildAnswerReview(paper, answers) {
+  if (!Array.isArray(paper) || paper.length === 0) return null;
+
+  const wrap = el('div', { class: 'answer-review-panel' });
+
+  const toggle = el('button', {
+    class: 'btn btn--ghost answer-review-panel__toggle',
+    text: 'Reveal answers',
+    attrs: {
+      id: 'reveal-answers-btn',
+      type: 'button',
+      'aria-expanded': 'false',
+      'aria-controls': 'answer-review',
+    },
+  });
+  wrap.appendChild(toggle);
+
+  wrap.appendChild(
+    el('p', {
+      class: 'answer-review-panel__hint',
+      text: 'Spoilers for anyone still playing.',
+    })
+  );
+
+  // Collapsed by default on every render — the `hidden` attribute, not just a
+  // visual class, so assistive tech and simple `[hidden]` selectors agree.
+  const review = el('div', {
+    class: 'answer-review',
+    attrs: { id: 'answer-review', hidden: 'hidden' },
+  });
+
+  const hasAnswers = answers && typeof answers === 'object';
+
+  paper.forEach(function (q, i) {
+    const item = el('div', { class: 'answer-review__item' });
+
+    item.appendChild(
+      el('p', { class: 'answer-review__eyebrow eyebrow', text: 'Q' + (i + 1) })
+    );
+    item.appendChild(
+      el('p', { class: 'answer-review__prompt', text: q && q.prompt != null ? q.prompt : '' })
+    );
+
+    if (hasAnswers) {
+      const qid = q && q.id != null ? String(q.id) : null;
+      const raw = qid ? answers[qid] : undefined;
+      const yourP = el('p', { class: 'answer-review__row answer-review__row--yours' });
+      yourP.appendChild(el('span', { class: 'answer-review__row-label', text: 'Your answer: ' }));
+      yourP.appendChild(el('span', { class: 'answer-review__row-value', text: formatPlayerAnswer(q, raw) }));
+      item.appendChild(yourP);
+    }
+
+    const correctP = el('p', { class: 'answer-review__row answer-review__row--correct' });
+    correctP.appendChild(el('span', { class: 'answer-review__row-label', text: 'Correct answer: ' }));
+    correctP.appendChild(el('span', { class: 'answer-review__row-value', text: formatCorrectAnswer(q) }));
+    item.appendChild(correctP);
+
+    review.appendChild(item);
+  });
+
+  wrap.appendChild(review);
+  return wrap;
+}
+
+export function renderResults(result, seed, extras) {
   const screen = document.getElementById('screen-results');
   showScreen('screen-results');
 
@@ -439,36 +541,52 @@ export function renderResults(result, seed) {
   const perQuestion = Array.isArray(res.perQuestion) ? res.perQuestion : [];
   const elapsedMs = Number(res.elapsedMs) || 0;
 
+  const hasExtras = extras && typeof extras === 'object';
+  const reviewPaper = hasExtras && Array.isArray(extras.paper) ? extras.paper : null;
+  const reviewAnswers = hasExtras ? extras.answers : undefined; // may be null (D) or absent (no extras)
+  const bankVersion = hasExtras && extras.bankVersion != null ? extras.bankVersion : null;
+
   const revealNodes = [];
 
-  // Eyebrow header naming the seed.
-  const header = el('div', { class: 'results-head' });
-  header.appendChild(
-    el('p', { class: 'eyebrow', text: 'Seed ' + String(seed) + ' - your paper' })
-  );
-  header.appendChild(el('h2', { text: 'Marked' }));
-  root.appendChild(header);
-  revealNodes.push(header);
-
-  /* ---- Score + per-topic breakdown (portrait: stacked; wide: side-by-side) ---- */
+  /* ---- C1 — glanceable score card (leads the screen) + per-topic breakdown ---- */
 
   const layout = el('div', { class: 'results-layout' });
 
-  // Score panel.
+  // Score card: seed + bank version (mono), the score itself as the dominant
+  // element, and the elapsed time beneath labelled as the tie-breaker. This
+  // replaces the old separate "Comparison field" jargon block entirely.
   const scorePanel = el('div', { class: 'results-layout__score' });
-  const score = el('div', { class: 'score' });
-  score.appendChild(el('p', { class: 'eyebrow', text: 'Total correct' }));
-  const scoreLine = el('p', { class: 'score__line' });
-  scoreLine.appendChild(el('span', { class: 'score__value', text: String(total) }));
-  scoreLine.appendChild(el('span', { class: 'score__max', text: '/ ' + String(maxTotal) }));
-  score.appendChild(scoreLine);
-  score.appendChild(
-    el('p', {
-      class: 'score__label',
-      text: 'Marked on-device. Nothing about your paper leaves this phone.'
+  const scoreCard = el('div', { class: 'score-card' });
+
+  const meta = el('p', { class: 'score-card__meta mono' });
+  meta.appendChild(
+    el('span', {
+      text: 'Seed ' + String(seed) + (bankVersion != null ? ' · bank v' + bankVersion : ''),
     })
   );
-  scorePanel.appendChild(score);
+  scoreCard.appendChild(meta);
+
+  scoreCard.appendChild(el('p', { class: 'eyebrow', text: 'Total correct' }));
+  const scoreLine = el('p', { class: 'score-card__line' });
+  scoreLine.appendChild(el('span', { class: 'score-card__value', text: String(total) }));
+  scoreLine.appendChild(el('span', { class: 'score-card__max', text: '/ ' + String(maxTotal) }));
+  scoreCard.appendChild(scoreLine);
+
+  const timeLine = el('p', { class: 'score-card__time mono' });
+  timeLine.appendChild(iconClock(16));
+  timeLine.appendChild(el('span', { text: formatElapsed(elapsedMs) }));
+  scoreCard.appendChild(timeLine);
+  scoreCard.appendChild(
+    el('p', { class: 'score-card__tiebreak', text: 'Tie-breaker: fastest time wins.' })
+  );
+  scoreCard.appendChild(
+    el('p', {
+      class: 'score-card__note',
+      text: 'Marked on-device. Nothing about your paper leaves this phone.',
+    })
+  );
+
+  scorePanel.appendChild(scoreCard);
   layout.appendChild(scorePanel);
 
   // Breakdown panel.
@@ -504,26 +622,6 @@ export function renderResults(result, seed) {
   root.appendChild(layout);
   revealNodes.push(layout);
 
-  /* ---- Elapsed time — the COMPARISON / tie-break field ---- */
-
-  const elapsed = el('div', { class: 'elapsed' });
-  const elapsedHead = el('p', { class: 'eyebrow' });
-  elapsedHead.appendChild(iconClock(16));
-  elapsedHead.appendChild(el('span', { text: 'Comparison field' }));
-  elapsed.appendChild(elapsedHead);
-
-  elapsed.appendChild(el('p', { class: 'elapsed__value', text: formatElapsed(elapsedMs) }));
-  elapsed.appendChild(
-    el('p', {
-      class: 'elapsed__label',
-      text:
-        'Time is the shared summary comparison field. On a tied score, the shorter time wins. ' +
-        'This app does not declare a cross-device winner - agree on the result together.'
-    })
-  );
-  root.appendChild(elapsed);
-  revealNodes.push(elapsed);
-
   /* ---- Per-question correct / incorrect grid ---- */
 
   const gridWrap = el('div', { class: 'results-grid' });
@@ -552,6 +650,14 @@ export function renderResults(result, seed) {
   root.appendChild(gridWrap);
   revealNodes.push(gridWrap);
 
+  /* ---- C2 — spoiler-gated answer review (collapsed by default) ---- */
+
+  const reviewSection = buildAnswerReview(reviewPaper, reviewAnswers);
+  if (reviewSection) {
+    root.appendChild(reviewSection);
+    revealNodes.push(reviewSection);
+  }
+
   /* ---- Share controls (app.js wires their clicks) ---- */
 
   const share = el('div', { class: 'share' });
@@ -559,20 +665,45 @@ export function renderResults(result, seed) {
 
   const buttons = el('div', { class: 'share__row' });
 
-  buttons.appendChild(
+  // C4 — WhatsApp/Telegram start enabled here; app.js immediately reconciles
+  // their disabled state + note visibility against navigator.onLine right
+  // after this render call (and again on every online/offline transition), so
+  // render.js never itself reads navigator.onLine (Invariant 2: data in via
+  // arguments only).
+  const waWrap = el('div', { class: 'share__btn-wrap' });
+  waWrap.appendChild(
     el('button', {
       class: 'btn btn--primary share__btn share__btn--whatsapp',
       text: 'WhatsApp',
       attrs: { id: 'share-whatsapp', type: 'button' }
     })
   );
-  buttons.appendChild(
+  waWrap.appendChild(
+    el('p', {
+      class: 'share__btn-note',
+      text: 'Needs internet',
+      attrs: { id: 'share-whatsapp-note', hidden: 'hidden' }
+    })
+  );
+  buttons.appendChild(waWrap);
+
+  const tgWrap = el('div', { class: 'share__btn-wrap' });
+  tgWrap.appendChild(
     el('button', {
       class: 'btn btn--ghost share__btn share__btn--telegram',
       text: 'Telegram',
       attrs: { id: 'share-telegram', type: 'button' }
     })
   );
+  tgWrap.appendChild(
+    el('p', {
+      class: 'share__btn-note',
+      text: 'Needs internet',
+      attrs: { id: 'share-telegram-note', hidden: 'hidden' }
+    })
+  );
+  buttons.appendChild(tgWrap);
+
   buttons.appendChild(
     el('button', {
       class: 'btn btn--ghost share__btn share__btn--copy',

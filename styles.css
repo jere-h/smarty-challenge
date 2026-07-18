@@ -577,7 +577,8 @@ button {
 }
 
 .quiz-actions #submit-btn,
-.results-actions #restart-btn {
+.results-actions #rematch-btn,
+.results-actions #same-seed-btn {
   align-self: flex-start;
 }
 
@@ -716,18 +717,6 @@ button {
   gap: var(--space-5);
 }
 
-.results-head h2 {
-  font-size: 1.6rem;
-}
-
-.results-head p {
-  color: var(--color-muted);
-}
-
-.results-head .eyebrow {
-  color: var(--color-muted);
-}
-
 /* PORTRAIT: single column, score THEN breakdown. */
 .results-layout {
   display: grid;
@@ -752,8 +741,12 @@ button {
   }
 }
 
-/* Score card */
-.score {
+/* C1 — glanceable score card: seed + bank version, the score itself as the
+   dominant element (clamp ~4-5rem so it reads at arm's length — see
+   .score-card__value below), then the elapsed time labelled as the
+   tie-breaker. This is the one card the results screen leads with; it
+   replaces the old separate "Comparison field" block entirely. */
+.score-card {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -765,28 +758,50 @@ button {
   box-shadow: var(--shadow-md);
 }
 
-.score__line {
+.score-card__meta {
+  color: var(--color-muted);
+  font-size: 0.95rem;
+}
+
+.score-card__line {
   display: flex;
   align-items: baseline;
   gap: var(--space-2);
 }
 
-.score__value {
+.score-card__value {
   font-family: var(--font-mono);
-  font-size: clamp(2.6rem, 12vw, 3.6rem);
+  /* Arm's-length readability is the acceptance bar here — clamp keeps the
+     digit large on every viewport without ever shrinking below ~4rem. */
+  font-size: clamp(3.2rem, 15vw, 5rem);
   font-weight: 650;
   letter-spacing: -0.03em;
   line-height: 1;
   color: var(--color-accent);
 }
 
-.score__max {
+.score-card__max {
   font-family: var(--font-mono);
   font-size: 1.4rem;
   color: var(--color-muted);
 }
 
-.score__label {
+.score-card__time {
+  margin-top: var(--space-1);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 1.3rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.score-card__tiebreak {
+  font-size: 0.9rem;
+  color: var(--color-muted);
+}
+
+.score-card__note {
   margin-top: var(--space-2);
   font-size: 0.9rem;
   color: var(--color-muted);
@@ -832,35 +847,6 @@ button {
   font-variant-numeric: tabular-nums;
   color: var(--color-muted);
   white-space: nowrap;
-}
-
-/* Elapsed time — the comparison / tie-break field */
-.elapsed {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-5);
-  background: var(--color-sand);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-}
-
-.elapsed .eyebrow {
-  margin-bottom: var(--space-1);
-}
-
-.elapsed__value {
-  font-family: var(--font-mono);
-  font-size: clamp(1.8rem, 8vw, 2.4rem);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-}
-
-.elapsed__label {
-  font-size: 0.9rem;
-  color: var(--color-muted);
-  line-height: 1.5;
 }
 
 /* Per-question correctness grid */
@@ -928,6 +914,115 @@ button {
 .share__btn {
   flex: 1 1 auto;
   min-width: 140px;
+}
+
+/* C4 — WhatsApp/Telegram get a wrapper so a "needs internet" note can sit
+   under the button without changing the button's own label; Copy summary
+   (always enabled) stays a plain child of .share__row. The wrapper is a
+   column flex context, so stretching its button to full width here is safe
+   (unlike on .share__btn itself, which is a row flex item elsewhere). */
+.share__btn-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1 1 auto;
+  min-width: 140px;
+}
+
+.share__btn-wrap .share__btn {
+  width: 100%;
+}
+
+.share__btn-note {
+  font-size: 0.82rem;
+  color: var(--color-muted);
+  line-height: 1.3;
+}
+
+.share__btn-note[hidden] {
+  display: none;
+}
+
+/* Disabled share buttons: never rely on color alone — the visible
+   "Needs internet" note above is the primary signal; this just de-emphasizes
+   the button itself. Works unmodified in both color schemes via the shared
+   tokens already flipped by prefers-color-scheme above. */
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.btn:disabled:hover {
+  border-color: var(--color-border);
+}
+
+/* C2 — spoiler-gated answer review */
+.answer-review-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.answer-review-panel__hint {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
+.answer-review {
+  margin-top: var(--space-2);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.answer-review[hidden] {
+  display: none;
+}
+
+.answer-review__item {
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.answer-review__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-muted);
+  font-weight: 600;
+}
+
+.answer-review__prompt {
+  margin-top: var(--space-2);
+  font-size: 1rem;
+  font-weight: 550;
+  line-height: 1.4;
+}
+
+.answer-review__row {
+  margin-top: var(--space-2);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.answer-review__row-label {
+  color: var(--color-muted);
+}
+
+.answer-review__row-value {
+  font-weight: 600;
+}
+
+.answer-review__row--correct .answer-review__row-value {
+  color: var(--color-accent);
 }
 
 /* -------------------------------------------------------------- Reveal FX */
