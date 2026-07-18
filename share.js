@@ -28,7 +28,7 @@ function buildGrid(perQuestion) {
   return rows.join('\n');
 }
 
-// buildSummary(seed, result, bankVersion) -> string
+// buildSummary(seed, result, bankVersion, challengeUrl, mode) -> string
 // Spoiler-free: seed, score, time, and correctness grid only. No prompts,
 // no options, no answers ever enter this string. `bankVersion` is OPTIONAL
 // (defaults to 1) so a mismatched-bank device can be spotted before two
@@ -36,16 +36,20 @@ function buildGrid(perQuestion) {
 // `challengeUrl` is OPTIONAL: a link that opens the app with this game number
 // (and paper length) pre-filled so a friend can start the identical paper in
 // one tap. Like everything else here it carries no prompts or answers.
-export function buildSummary(seed, result, bankVersion, challengeUrl) {
+// `mode` is OPTIONAL ('math' | 'riddles'): it labels the title line so a
+// shared grid announces which challenge it was.
+export function buildSummary(seed, result, bankVersion, challengeUrl, mode) {
   const total = result && typeof result.total === 'number' ? result.total : 0;
   const maxTotal = result && typeof result.maxTotal === 'number' ? result.maxTotal : 20;
   const elapsed = formatElapsed(result ? result.elapsedMs : 0);
   const grid = buildGrid(result ? result.perQuestion : []);
-  const bank = bankVersion != null ? bankVersion : 1;
+  const title = mode === 'riddles'
+    ? '\u{1F9E9} Smarty Challenge — Riddles'
+    : '\u{1F4D0} Smarty Challenge — Math';
 
   const lines = [
-    'Smarty Challenge',
-    `Game number ${seed} · set v${bank}`,
+    title,
+    `Game number ${seed}`,
     `Score ${total}/${maxTotal}  Time ${elapsed}`,
     '',
     grid,
