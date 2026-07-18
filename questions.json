@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "bankVersion": 1,
+  "bankVersion": 2,
   "subject": "P5 Math",
   "questions": [
     {
@@ -9,9 +9,19 @@
       "difficulty": 1,
       "type": "mcq",
       "prompt": "What is 1/4 + 1/4?",
-      "options": ["1/2", "1/8", "3/4", "1"],
+      "options": [
+        "1/2",
+        "1/8",
+        "3/4",
+        "1"
+      ],
       "answer": 0,
-      "check": { "rule": "exact", "accepted": ["0"] }
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "0"
+        ]
+      }
     },
     {
       "id": "pm-frac-02",
@@ -20,7 +30,14 @@
       "type": "short-numeric",
       "prompt": "What is 3/4 + 1/8? Give your answer as a fraction in its simplest form.",
       "answer": "7/8",
-      "check": { "rule": "fraction-equivalent", "accepted": ["7/8", "14/16", "0.875"] }
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "7/8",
+          "14/16",
+          "0.875"
+        ]
+      }
     },
     {
       "id": "pm-frac-03",
@@ -28,9 +45,19 @@
       "difficulty": 2,
       "type": "mcq",
       "prompt": "Which fraction is equivalent to 2/3?",
-      "options": ["4/6", "3/4", "2/6", "5/6"],
-      "answer": 0,
-      "check": { "rule": "exact", "accepted": ["0"] }
+      "options": [
+        "3/4",
+        "4/6",
+        "2/6",
+        "5/6"
+      ],
+      "answer": 1,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "1"
+        ]
+      }
     },
     {
       "id": "pm-frac-04",
@@ -39,7 +66,15 @@
       "type": "short-numeric",
       "prompt": "A ribbon is 5/6 m long. Sara uses 1/3 m of it. How much ribbon is left, in metres?",
       "answer": "1/2",
-      "check": { "rule": "fraction-equivalent", "accepted": ["1/2", "3/6", "2/4", "0.5"] }
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "1/2",
+          "3/6",
+          "2/4",
+          "0.5"
+        ]
+      }
     },
     {
       "id": "pm-frac-05",
@@ -47,9 +82,19 @@
       "difficulty": 3,
       "type": "mcq",
       "prompt": "What is 2/5 of 30?",
-      "options": ["12", "10", "15", "6"],
-      "answer": 0,
-      "check": { "rule": "exact", "accepted": ["0"] }
+      "options": [
+        "10",
+        "15",
+        "12",
+        "6"
+      ],
+      "answer": 2,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "2"
+        ]
+      }
     },
     {
       "id": "pm-frac-06",
@@ -58,7 +103,106 @@
       "type": "short-numeric",
       "prompt": "What is 2 1/2 divided by 5? Give your answer as a fraction in its simplest form.",
       "answer": "1/2",
-      "check": { "rule": "fraction-equivalent", "accepted": ["1/2", "2/4", "0.5"] }
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "1/2",
+          "2/4",
+          "0.5"
+        ]
+      }
+    },
+    {
+      "id": "pm-frac-07",
+      "topic": "Fractions",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt": "What is 1/3 + 1/3?",
+      "options": [
+        "1/3",
+        "3/6",
+        "1",
+        "2/3"
+      ],
+      "answer": 3,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "3"
+        ]
+      }
+    },
+    {
+      "id": "pm-frac-08",
+      "topic": "Fractions",
+      "difficulty": 2,
+      "type": "short-numeric",
+      "prompt": "What is 3/5 - 1/5? Give your answer as a fraction in its simplest form.",
+      "answer": "2/5",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "2/5",
+          "4/10",
+          "0.4"
+        ]
+      }
+    },
+    {
+      "id": "pm-frac-09",
+      "topic": "Fractions",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "Which fraction is equivalent to 3/4?",
+      "options": [
+        "6/8",
+        "4/5",
+        "3/8",
+        "2/4"
+      ],
+      "answer": 0,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "0"
+        ]
+      }
+    },
+    {
+      "id": "pm-frac-10",
+      "topic": "Fractions",
+      "difficulty": 4,
+      "type": "short-numeric",
+      "prompt": "A tank is 3/8 full of water. After adding 1/4 more, what fraction of the tank is full?",
+      "answer": "5/8",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "5/8",
+          "10/16",
+          "0.625"
+        ]
+      }
+    },
+    {
+      "id": "pm-frac-11",
+      "topic": "Fractions",
+      "difficulty": 5,
+      "type": "mcq",
+      "prompt": "What is 3/4 of 2/3 of 60?",
+      "options": [
+        "40",
+        "30",
+        "45",
+        "20"
+      ],
+      "answer": 1,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "1"
+        ]
+      }
     },
     {
       "id": "pm-dec-01",
@@ -66,9 +210,19 @@
       "difficulty": 1,
       "type": "mcq",
       "prompt": "What is 0.6 + 0.3?",
-      "options": ["0.9", "0.63", "0.09", "1.9"],
-      "answer": 0,
-      "check": { "rule": "exact", "accepted": ["0"] }
+      "options": [
+        "0.63",
+        "0.09",
+        "0.9",
+        "1.9"
+      ],
+      "answer": 2,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "2"
+        ]
+      }
     },
     {
       "id": "pm-dec-02",
@@ -77,7 +231,14 @@
       "type": "short-numeric",
       "prompt": "What is 4.5 + 2.75?",
       "answer": 7.25,
-      "check": { "rule": "tolerance", "tolerance": 0.001, "accepted": ["7.25", "7,25"] }
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "7.25",
+          "7,25"
+        ]
+      }
     },
     {
       "id": "pm-dec-03",
@@ -85,9 +246,19 @@
       "difficulty": 2,
       "type": "mcq",
       "prompt": "What is 0.25 written as a fraction in its simplest form?",
-      "options": ["1/4", "2/5", "1/5", "25/10"],
-      "answer": 0,
-      "check": { "rule": "exact", "accepted": ["0"] }
+      "options": [
+        "2/5",
+        "1/5",
+        "25/10",
+        "1/4"
+      ],
+      "answer": 3,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "3"
+        ]
+      }
     },
     {
       "id": "pm-dec-04",
@@ -96,7 +267,14 @@
       "type": "short-numeric",
       "prompt": "What is 3.2 multiplied by 4?",
       "answer": 12.8,
-      "check": { "rule": "tolerance", "tolerance": 0.001, "accepted": ["12.8", "12,8"] }
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "12.8",
+          "12,8"
+        ]
+      }
     },
     {
       "id": "pm-dec-05",
@@ -104,9 +282,19 @@
       "difficulty": 3,
       "type": "mcq",
       "prompt": "What is 9.6 divided by 3?",
-      "options": ["3.2", "3.02", "32", "0.32"],
+      "options": [
+        "3.2",
+        "3.02",
+        "32",
+        "0.32"
+      ],
       "answer": 0,
-      "check": { "rule": "exact", "accepted": ["0"] }
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "0"
+        ]
+      }
     },
     {
       "id": "pm-dec-06",
@@ -115,7 +303,103 @@
       "type": "short-numeric",
       "prompt": "A pen costs $1.35. How much do 6 identical pens cost, in dollars?",
       "answer": 8.1,
-      "check": { "rule": "tolerance", "tolerance": 0.001, "accepted": ["8.1", "8.10", "8,1", "8,10"] }
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "8.1",
+          "8.10",
+          "8,1",
+          "8,10"
+        ]
+      }
+    },
+    {
+      "id": "pm-dec-07",
+      "topic": "Decimals",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt": "What is 0.5 + 0.4?",
+      "options": [
+        "0.09",
+        "0.9",
+        "1.9",
+        "0.45"
+      ],
+      "answer": 1,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "pm-dec-08",
+      "topic": "Decimals",
+      "difficulty": 2,
+      "type": "short-numeric",
+      "prompt": "What is 6.5 - 2.25?",
+      "answer": 4.25,
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "4.25",
+          "4,25"
+        ]
+      }
+    },
+    {
+      "id": "pm-dec-09",
+      "topic": "Decimals",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "What is 0.125 written as a fraction in its simplest form?",
+      "options": [
+        "1/5",
+        "1/9",
+        "1/8",
+        "5/8"
+      ],
+      "answer": 2,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "2"
+        ]
+      }
+    },
+    {
+      "id": "pm-dec-10",
+      "topic": "Decimals",
+      "difficulty": 4,
+      "type": "short-numeric",
+      "prompt": "What is 7.5 divided by 5?",
+      "answer": 1.5,
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "1.5",
+          "1,5"
+        ]
+      }
+    },
+    {
+      "id": "pm-dec-11",
+      "topic": "Decimals",
+      "difficulty": 5,
+      "type": "short-numeric",
+      "prompt": "A ribbon of length 12.6 m is cut into pieces of 0.9 m each. How many pieces are cut?",
+      "answer": 14,
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "14"
+        ]
+      }
     },
     {
       "id": "pm-pct-01",
@@ -123,9 +407,19 @@
       "difficulty": 1,
       "type": "mcq",
       "prompt": "What is 50% of 80?",
-      "options": ["40", "30", "20", "160"],
-      "answer": 0,
-      "check": { "rule": "exact", "accepted": ["0"] }
+      "options": [
+        "30",
+        "20",
+        "160",
+        "40"
+      ],
+      "answer": 3,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "3"
+        ]
+      }
     },
     {
       "id": "pm-pct-02",
@@ -134,7 +428,13 @@
       "type": "short-numeric",
       "prompt": "What is 25% of 240?",
       "answer": 60,
-      "check": { "rule": "tolerance", "tolerance": 0.001, "accepted": ["60"] }
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "60"
+        ]
+      }
     },
     {
       "id": "pm-pct-03",
@@ -142,9 +442,19 @@
       "difficulty": 2,
       "type": "mcq",
       "prompt": "Write 0.7 as a percentage.",
-      "options": ["70%", "7%", "0.7%", "0.07%"],
+      "options": [
+        "70%",
+        "7%",
+        "0.7%",
+        "0.07%"
+      ],
       "answer": 0,
-      "check": { "rule": "exact", "accepted": ["0"] }
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "0"
+        ]
+      }
     },
     {
       "id": "pm-pct-04",
@@ -153,7 +463,15 @@
       "type": "short-numeric",
       "prompt": "A jacket costs $80. In a sale its price is reduced by 15%. What is the new price, in dollars?",
       "answer": 68,
-      "check": { "rule": "tolerance", "tolerance": 0.001, "accepted": ["68", "68.00", "68,00"] }
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "68",
+          "68.00",
+          "68,00"
+        ]
+      }
     },
     {
       "id": "pm-pct-05",
@@ -161,9 +479,19 @@
       "difficulty": 3,
       "type": "mcq",
       "prompt": "What is 3/5 written as a percentage?",
-      "options": ["60%", "35%", "53%", "30%"],
-      "answer": 0,
-      "check": { "rule": "exact", "accepted": ["0"] }
+      "options": [
+        "35%",
+        "60%",
+        "53%",
+        "30%"
+      ],
+      "answer": 1,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "1"
+        ]
+      }
     },
     {
       "id": "pm-pct-06",
@@ -172,7 +500,100 @@
       "type": "short-numeric",
       "prompt": "There are 200 pupils in a school. 35% of them wear glasses. How many pupils wear glasses?",
       "answer": 70,
-      "check": { "rule": "tolerance", "tolerance": 0.001, "accepted": ["70"] }
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "70"
+        ]
+      }
+    },
+    {
+      "id": "pm-pct-07",
+      "topic": "Percentage",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt": "What is 10% of 90?",
+      "options": [
+        "19",
+        "90",
+        "9",
+        "0.9"
+      ],
+      "answer": 2,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "2"
+        ]
+      }
+    },
+    {
+      "id": "pm-pct-08",
+      "topic": "Percentage",
+      "difficulty": 2,
+      "type": "short-numeric",
+      "prompt": "What is 40% of 150?",
+      "answer": 60,
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "60"
+        ]
+      }
+    },
+    {
+      "id": "pm-pct-09",
+      "topic": "Percentage",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "Write 3/8 as a percentage.",
+      "options": [
+        "38%",
+        "3.8%",
+        "375%",
+        "37.5%"
+      ],
+      "answer": 3,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "3"
+        ]
+      }
+    },
+    {
+      "id": "pm-pct-10",
+      "topic": "Percentage",
+      "difficulty": 4,
+      "type": "short-numeric",
+      "prompt": "A bag of rice costs $45. Its price increases by 20%. What is the new price, in dollars?",
+      "answer": 54,
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "54",
+          "54.00",
+          "54,00"
+        ]
+      }
+    },
+    {
+      "id": "pm-pct-11",
+      "topic": "Percentage",
+      "difficulty": 5,
+      "type": "short-numeric",
+      "prompt": "In a class of 40 pupils, 60% passed a test on the first try. Of the pupils who did not pass, half passed on a second try. How many pupils in total passed the test?",
+      "answer": 32,
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "32"
+        ]
+      }
     },
     {
       "id": "pm-rat-01",
@@ -180,9 +601,19 @@
       "difficulty": 1,
       "type": "mcq",
       "prompt": "Simplify the ratio 4 : 8.",
-      "options": ["1 : 2", "2 : 1", "4 : 8", "1 : 4"],
+      "options": [
+        "1 : 2",
+        "2 : 1",
+        "4 : 8",
+        "1 : 4"
+      ],
       "answer": 0,
-      "check": { "rule": "exact", "accepted": ["0"] }
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "0"
+        ]
+      }
     },
     {
       "id": "pm-rat-02",
@@ -191,7 +622,13 @@
       "type": "short-numeric",
       "prompt": "Two numbers are in the ratio 2 : 3. If the smaller number is 10, what is the larger number?",
       "answer": 15,
-      "check": { "rule": "tolerance", "tolerance": 0.001, "accepted": ["15"] }
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "15"
+        ]
+      }
     },
     {
       "id": "pm-rat-03",
@@ -199,9 +636,19 @@
       "difficulty": 2,
       "type": "mcq",
       "prompt": "Simplify the ratio 9 : 12.",
-      "options": ["3 : 4", "4 : 3", "9 : 12", "1 : 3"],
-      "answer": 0,
-      "check": { "rule": "exact", "accepted": ["0"] }
+      "options": [
+        "4 : 3",
+        "3 : 4",
+        "9 : 12",
+        "1 : 3"
+      ],
+      "answer": 1,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "1"
+        ]
+      }
     },
     {
       "id": "pm-rat-04",
@@ -210,7 +657,13 @@
       "type": "short-numeric",
       "prompt": "Sweets are shared between Mei and Raj in the ratio 3 : 5. There are 40 sweets in total. How many sweets does Raj get?",
       "answer": 25,
-      "check": { "rule": "tolerance", "tolerance": 0.001, "accepted": ["25"] }
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "25"
+        ]
+      }
     },
     {
       "id": "pm-rat-05",
@@ -218,9 +671,19 @@
       "difficulty": 3,
       "type": "mcq",
       "prompt": "A recipe mixes flour and sugar in the ratio 5 : 2. If 20 cups of flour are used, how many cups of sugar are needed?",
-      "options": ["8", "10", "4", "50"],
-      "answer": 0,
-      "check": { "rule": "exact", "accepted": ["0"] }
+      "options": [
+        "10",
+        "4",
+        "8",
+        "50"
+      ],
+      "answer": 2,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "2"
+        ]
+      }
     },
     {
       "id": "pm-rat-06",
@@ -229,7 +692,98 @@
       "type": "short-numeric",
       "prompt": "The ratio of red to blue marbles is 4 : 7. There are 12 more blue marbles than red marbles. How many red marbles are there?",
       "answer": 16,
-      "check": { "rule": "tolerance", "tolerance": 0.001, "accepted": ["16"] }
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "16"
+        ]
+      }
+    },
+    {
+      "id": "pm-rat-07",
+      "topic": "Ratio",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt": "Simplify the ratio 6 : 9.",
+      "options": [
+        "3 : 2",
+        "6 : 9",
+        "1 : 3",
+        "2 : 3"
+      ],
+      "answer": 3,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "3"
+        ]
+      }
+    },
+    {
+      "id": "pm-rat-08",
+      "topic": "Ratio",
+      "difficulty": 2,
+      "type": "short-numeric",
+      "prompt": "Two numbers are in the ratio 3 : 4. If the larger number is 24, what is the smaller number?",
+      "answer": 18,
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "18"
+        ]
+      }
+    },
+    {
+      "id": "pm-rat-09",
+      "topic": "Ratio",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "Simplify the ratio 15 : 20.",
+      "options": [
+        "3 : 4",
+        "4 : 3",
+        "15 : 20",
+        "1 : 5"
+      ],
+      "answer": 0,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "0"
+        ]
+      }
+    },
+    {
+      "id": "pm-rat-10",
+      "topic": "Ratio",
+      "difficulty": 4,
+      "type": "short-numeric",
+      "prompt": "Marbles are shared between Ali and Ben in the ratio 4 : 5. Ben has 15 more marbles than Ali. How many marbles does Ali have?",
+      "answer": 60,
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "60"
+        ]
+      }
+    },
+    {
+      "id": "pm-rat-11",
+      "topic": "Ratio",
+      "difficulty": 5,
+      "type": "short-numeric",
+      "prompt": "The ratio of the number of boys to girls in a school is 5 : 6. There are 220 pupils in total. How many more girls than boys are there?",
+      "answer": 20,
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "20"
+        ]
+      }
     },
     {
       "id": "pm-area-01",
@@ -237,9 +791,19 @@
       "difficulty": 1,
       "type": "mcq",
       "prompt": "A square has a side of 6 cm. What is its perimeter, in cm?",
-      "options": ["24", "36", "12", "30"],
-      "answer": 0,
-      "check": { "rule": "exact", "accepted": ["0"] }
+      "options": [
+        "36",
+        "24",
+        "12",
+        "30"
+      ],
+      "answer": 1,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "1"
+        ]
+      }
     },
     {
       "id": "pm-area-02",
@@ -248,7 +812,13 @@
       "type": "short-numeric",
       "prompt": "A rectangle is 8 cm long and 3 cm wide. What is its area, in square cm?",
       "answer": 24,
-      "check": { "rule": "tolerance", "tolerance": 0.001, "accepted": ["24"] }
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "24"
+        ]
+      }
     },
     {
       "id": "pm-area-03",
@@ -256,9 +826,19 @@
       "difficulty": 2,
       "type": "mcq",
       "prompt": "A square has a side of 5 cm. What is its area, in square cm?",
-      "options": ["25", "20", "10", "50"],
-      "answer": 0,
-      "check": { "rule": "exact", "accepted": ["0"] }
+      "options": [
+        "20",
+        "10",
+        "25",
+        "50"
+      ],
+      "answer": 2,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "2"
+        ]
+      }
     },
     {
       "id": "pm-area-04",
@@ -267,7 +847,13 @@
       "type": "short-numeric",
       "prompt": "A rectangle has an area of 48 square cm and a length of 8 cm. What is its width, in cm?",
       "answer": 6,
-      "check": { "rule": "tolerance", "tolerance": 0.001, "accepted": ["6"] }
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "6"
+        ]
+      }
     },
     {
       "id": "pm-area-05",
@@ -275,9 +861,19 @@
       "difficulty": 3,
       "type": "mcq",
       "prompt": "A triangle has a base of 10 cm and a height of 6 cm. What is its area, in square cm?",
-      "options": ["30", "60", "16", "15"],
-      "answer": 0,
-      "check": { "rule": "exact", "accepted": ["0"] }
+      "options": [
+        "60",
+        "16",
+        "15",
+        "30"
+      ],
+      "answer": 3,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "3"
+        ]
+      }
     },
     {
       "id": "pm-area-06",
@@ -286,7 +882,98 @@
       "type": "short-numeric",
       "prompt": "A rectangle has a perimeter of 30 cm and a width of 5 cm. What is its length, in cm?",
       "answer": 10,
-      "check": { "rule": "tolerance", "tolerance": 0.001, "accepted": ["10"] }
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "10"
+        ]
+      }
+    },
+    {
+      "id": "pm-area-07",
+      "topic": "Area & Perimeter",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt": "A rectangle is 7 cm long and 4 cm wide. What is its perimeter, in cm?",
+      "options": [
+        "22",
+        "28",
+        "11",
+        "33"
+      ],
+      "answer": 0,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "0"
+        ]
+      }
+    },
+    {
+      "id": "pm-area-08",
+      "topic": "Area & Perimeter",
+      "difficulty": 2,
+      "type": "short-numeric",
+      "prompt": "A square has a perimeter of 20 cm. What is the length of one side, in cm?",
+      "answer": 5,
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "5"
+        ]
+      }
+    },
+    {
+      "id": "pm-area-09",
+      "topic": "Area & Perimeter",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "A rectangle has a length of 9 cm and an area of 54 square cm. What is its width, in cm?",
+      "options": [
+        "9",
+        "6",
+        "45",
+        "63"
+      ],
+      "answer": 1,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "pm-area-10",
+      "topic": "Area & Perimeter",
+      "difficulty": 4,
+      "type": "short-numeric",
+      "prompt": "A triangle has an area of 40 square cm and a base of 8 cm. What is its height, in cm?",
+      "answer": 10,
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "10"
+        ]
+      }
+    },
+    {
+      "id": "pm-area-11",
+      "topic": "Area & Perimeter",
+      "difficulty": 5,
+      "type": "short-numeric",
+      "prompt": "A rectangular garden measures 12 m by 9 m. A 1 m-wide path runs around the inside of the garden, along its border. What is the area of the garden not covered by the path, in square metres?",
+      "answer": 70,
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "70"
+        ]
+      }
     },
     {
       "id": "pm-avg-01",
@@ -294,9 +981,19 @@
       "difficulty": 1,
       "type": "mcq",
       "prompt": "What is the average of 4 and 8?",
-      "options": ["6", "12", "4", "8"],
-      "answer": 0,
-      "check": { "rule": "exact", "accepted": ["0"] }
+      "options": [
+        "12",
+        "4",
+        "6",
+        "8"
+      ],
+      "answer": 2,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "2"
+        ]
+      }
     },
     {
       "id": "pm-avg-02",
@@ -305,7 +1002,13 @@
       "type": "short-numeric",
       "prompt": "Find the average of 3, 7 and 8.",
       "answer": 6,
-      "check": { "rule": "tolerance", "tolerance": 0.001, "accepted": ["6"] }
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "6"
+        ]
+      }
     },
     {
       "id": "pm-avg-03",
@@ -313,9 +1016,19 @@
       "difficulty": 2,
       "type": "mcq",
       "prompt": "The average of 3 numbers is 10. What is their total?",
-      "options": ["30", "13", "10", "33"],
-      "answer": 0,
-      "check": { "rule": "exact", "accepted": ["0"] }
+      "options": [
+        "13",
+        "10",
+        "33",
+        "30"
+      ],
+      "answer": 3,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "3"
+        ]
+      }
     },
     {
       "id": "pm-avg-04",
@@ -324,7 +1037,13 @@
       "type": "short-numeric",
       "prompt": "The average of 5 numbers is 12. Four of the numbers add up to 50. What is the fifth number?",
       "answer": 10,
-      "check": { "rule": "tolerance", "tolerance": 0.001, "accepted": ["10"] }
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "10"
+        ]
+      }
     },
     {
       "id": "pm-avg-05",
@@ -332,9 +1051,19 @@
       "difficulty": 3,
       "type": "mcq",
       "prompt": "A car travels 120 km in 2 hours. What is its average speed, in km/h?",
-      "options": ["60", "240", "122", "30"],
+      "options": [
+        "60",
+        "240",
+        "122",
+        "30"
+      ],
       "answer": 0,
-      "check": { "rule": "exact", "accepted": ["0"] }
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "0"
+        ]
+      }
     },
     {
       "id": "pm-avg-06",
@@ -343,7 +1072,98 @@
       "type": "short-numeric",
       "prompt": "The average mass of 4 boxes is 9 kg. A fifth box with a mass of 14 kg is added. What is the new average mass of the 5 boxes, in kg?",
       "answer": 10,
-      "check": { "rule": "tolerance", "tolerance": 0.001, "accepted": ["10"] }
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "10"
+        ]
+      }
+    },
+    {
+      "id": "pm-avg-07",
+      "topic": "Average",
+      "difficulty": 1,
+      "type": "mcq",
+      "prompt": "What is the average of 10, 20 and 30?",
+      "options": [
+        "30",
+        "20",
+        "60",
+        "15"
+      ],
+      "answer": 1,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "pm-avg-08",
+      "topic": "Average",
+      "difficulty": 2,
+      "type": "short-numeric",
+      "prompt": "Find the average of 6, 9, 12 and 13.",
+      "answer": 10,
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "10"
+        ]
+      }
+    },
+    {
+      "id": "pm-avg-09",
+      "topic": "Average",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "The average of 4 numbers is 15. What is their total?",
+      "options": [
+        "15",
+        "19",
+        "60",
+        "64"
+      ],
+      "answer": 2,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "2"
+        ]
+      }
+    },
+    {
+      "id": "pm-avg-10",
+      "topic": "Average",
+      "difficulty": 4,
+      "type": "short-numeric",
+      "prompt": "The average of 6 numbers is 8. One of the numbers is removed and the average of the remaining 5 numbers becomes 7. What was the removed number?",
+      "answer": 13,
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "13"
+        ]
+      }
+    },
+    {
+      "id": "pm-avg-11",
+      "topic": "Average",
+      "difficulty": 5,
+      "type": "short-numeric",
+      "prompt": "The average mass of 3 boys is 42 kg. When a 4th boy joins them, the average mass of all 4 boys becomes 40 kg. What is the mass of the 4th boy, in kg?",
+      "answer": 34,
+      "check": {
+        "rule": "tolerance",
+        "tolerance": 0.001,
+        "accepted": [
+          "34"
+        ]
+      }
     }
   ]
 }

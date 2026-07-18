@@ -11,7 +11,7 @@
 // new one is fully installed). This replaces the old QUESTION_BANK_VERSION-derived name: cache
 // freshness and the question bank's own version (see questions.json's "bankVersion") are separate
 // concerns now — a batch can ship with no bank change at all and still needs a cache bump.
-const CACHE_VERSION = 5; // Batch D. E -> 6.
+const CACHE_VERSION = 6; // Batch E.
 const CACHE_NAME = 'smarty-v' + CACHE_VERSION;
 // Caches minted under the app's former name; still deleted on activate so
 // devices that installed before the rename don't keep a stale copy around.
