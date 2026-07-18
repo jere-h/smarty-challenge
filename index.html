@@ -24,23 +24,24 @@
           <p class="eyebrow">Step 1 of 3</p>
           <h2 id="screen-seed-title" class="seed-hero__title">Agree on a number, get the same paper</h2>
           <p class="seed-hero__lead">
-            Say a number out loud with your friends. Everyone types it in and gets the
-            exact same 20 questions in the exact same order. No accounts, no server,
-            no internet needed once the app has loaded once.
+            Say a number out loud &mdash; everyone who types it gets the same 20-question paper.
           </p>
 
           <form class="seed-form" id="seed-form" novalidate>
             <label class="seed-form__label" for="seed-input">Shared seed number</label>
-            <input
-              class="seed-form__field"
-              id="seed-input"
-              name="seed"
-              type="text"
-              inputmode="numeric"
-              autocomplete="off"
-              spellcheck="false"
-              value="1234"
-              aria-describedby="seed-hint seed-error">
+            <div class="seed-form__row">
+              <input
+                class="seed-form__field"
+                id="seed-input"
+                name="seed"
+                type="text"
+                inputmode="numeric"
+                autocomplete="off"
+                spellcheck="false"
+                value="1234"
+                aria-describedby="seed-hint seed-error">
+              <button class="btn btn--ghost seed-form__spin" id="spin-seed-btn" type="button">Spin a seed</button>
+            </div>
             <p class="seed-form__hint" id="seed-hint">
               A whole number, zero or above. The same number always builds the same paper.
             </p>
@@ -52,11 +53,7 @@
             <span class="offline-indicator__dot" aria-hidden="true"></span>
             <span class="offline-indicator__text">Getting ready for offline&hellip;</span>
           </div>
-          <p class="offline-note">
-            Open this app once while you have wifi. After that it works with the
-            connection off, so it is ready during a flight, a bus ride, or anywhere
-            the signal drops.
-          </p>
+          <p class="seed-hero__tiebreak">Score wins; ties go to the faster time.</p>
         </div>
       </div>
     </section>
@@ -79,7 +76,14 @@
       </form>
 
       <div class="quiz-actions">
-        <button class="btn btn--primary" id="submit-btn" type="button">Submit and mark</button>
+        <button class="btn btn--primary" id="submit-btn" type="submit" form="quiz-form">Submit and mark</button>
+        <div id="submit-guard" class="submit-guard" role="alert" hidden>
+          <p class="submit-guard__text" id="submit-guard-text"></p>
+          <div class="submit-guard__actions">
+            <button class="btn btn--primary" id="submit-anyway-btn" type="button">Submit anyway</button>
+            <button class="btn btn--ghost" id="keep-going-btn" type="button">Keep going</button>
+          </div>
+        </div>
       </div>
     </section>
 

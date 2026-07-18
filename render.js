@@ -240,6 +240,46 @@ export function renderQuiz(paper, seed, bankVersion) {
 
   const questions = Array.isArray(paper) ? paper : [];
 
+  // B1 — sticky quiz header: live "answered N/20" + "MM:SS" timer, painted
+  // here (once) and kept up to date afterward by app.js (progress from its
+  // delegated input/change autosave hook, the timer from its 1s interval).
+  // The timer itself opts OUT of the wrapper's aria-live so a screen reader
+  // is not asked to announce a changing time every second; the progress
+  // count (which only changes on an actual answer) stays live.
+  let statusBar = document.getElementById('quiz-status');
+  if (!statusBar) {
+    statusBar = el('div', {
+      class: 'quiz-status',
+      attrs: { id: 'quiz-status', role: 'status', 'aria-live': 'polite' }
+    });
+    statusBar.appendChild(
+      el('span', {
+        class: 'quiz-status__progress',
+        attrs: { id: 'quiz-progress' },
+        text: 'answered 0/' + questions.length
+      })
+    );
+    statusBar.appendChild(
+      el('span', {
+        class: 'quiz-status__timer mono',
+        attrs: { id: 'quiz-timer', 'aria-live': 'off' },
+        text: '00:00'
+      })
+    );
+    const head = screen && screen.querySelector('.screen__head');
+    if (head && head.parentNode) {
+      head.parentNode.insertBefore(statusBar, head.nextSibling);
+    } else if (screen) {
+      screen.insertBefore(statusBar, screen.firstChild);
+    }
+  } else {
+    // Re-render of an already-mounted quiz screen (e.g. a fresh Start after a
+    // rematch): reset the progress text; app.js drives the live value from
+    // here on. The timer's own text is entirely owned by app.js's interval.
+    const progressEl = document.getElementById('quiz-progress');
+    if (progressEl) progressEl.textContent = 'answered 0/' + questions.length;
+  }
+
   // Find or create the quiz form.
   let form = document.getElementById('quiz-form');
   if (!form) {
@@ -347,11 +387,15 @@ export function renderQuiz(paper, seed, bankVersion) {
   });
 
   // Submit control — create only if index.html did not already ship it.
+  // type="submit" + form="quiz-form" (rather than a bare type="button")
+  // makes this the form's default button, which is what lets Enter in any
+  // quiz field trigger the same B2 guard as a click (see app.js's shared
+  // requestSubmit() funnel).
   if (!document.getElementById('submit-btn')) {
     const submit = el('button', {
       class: 'btn btn--primary',
       text: 'Submit and mark',
-      attrs: { id: 'submit-btn', type: 'button' }
+      attrs: { id: 'submit-btn', type: 'submit', form: 'quiz-form' }
     });
     form.appendChild(submit);
   }

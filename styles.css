@@ -431,14 +431,106 @@ button {
   background: var(--color-accent);
 }
 
-/* Offline explainer copy under the pill */
-.offline-note {
+/* Seed input + spin button row (B3) */
+.seed-form__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: stretch;
+}
+
+.seed-form__row .seed-form__field {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+
+.seed-form__spin {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* Tie-breaker line — the sole remaining prose paragraph besides the form
+   (B3 copy diet). Uses the same muted token in both color schemes. */
+.seed-hero__tiebreak {
   color: var(--color-muted);
   font-size: 0.92rem;
   line-height: 1.5;
 }
 
 /* ------------------------------------------------------------ Quiz screen */
+
+/* B1 — sticky quiz header: live answered-count + timer. Stays pinned to the
+   viewport top while the 20 questions scroll underneath. Built entirely from
+   the shared tokens (already themed for both color schemes via the :root /
+   prefers-color-scheme:dark blocks above), so no separate dark override is
+   needed here. */
+.quiz-status {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.quiz-status__progress,
+.quiz-status__timer {
+  white-space: nowrap;
+}
+
+.quiz-status__timer {
+  color: var(--color-fg);
+}
+
+/* B2 — inline unanswered-submit guard, injected into .quiz-actions. Reuses
+   the same accent-tinted alert treatment as .resume-notice so it reads
+   consistently (and correctly in both color schemes) without a bespoke
+   warning palette. */
+.submit-guard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  flex: 1 1 100%;
+  padding: var(--space-4);
+  background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius);
+  color: var(--color-fg);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.submit-guard[hidden] {
+  display: none;
+}
+
+/* B2 — #submit-btn is hidden (not just visually, `hidden` attribute) while
+   the guard is confirming, so only one submit affordance is ever actionable
+   at a time. `.btn`'s own `display: inline-flex` is an author rule and would
+   otherwise beat the UA `[hidden]` default, so this needs the explicit
+   override (same reasoning as `.resume-notice[hidden]` above). */
+#submit-btn[hidden] {
+  display: none;
+}
+
+.submit-guard__text {
+  font-weight: 600;
+}
+
+.submit-guard__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
 
 /* A2 — dismissible "resumed your paper" notice. Sits above #quiz-form;
    default-hidden via the `hidden` attribute (specificity-guarded below so it

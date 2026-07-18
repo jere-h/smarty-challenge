@@ -36,6 +36,22 @@ let lastResult = null;
 /** Guards against double-marking (submit button + form submit both firing). */
 let resultsShown = false;
 
+/**
+ * B2 — submit state machine's UI-facing half: `idle` (form as usual) or
+ * `confirming` (the inline "N unanswered" guard is showing). The terminal
+ * "marked" state is `resultsShown` above — there is no separate flag for it,
+ * so there is exactly one place that latches "already marked".
+ * @type {'idle'|'confirming'}
+ */
+let submitState = 'idle';
+
+/**
+ * B1 — ONE module-level interval handle for the quiz timer. Always
+ * `clearInterval`d before any `setInterval` (never two live timers).
+ * @type {number|null}
+ */
+let timerHandle = null;
+
 /** The persisted State (Section 1 contract) — the in-memory mirror of localStorage. */
 let persisted = loadState();
 
@@ -176,6 +192,112 @@ function showResumeNotice() {
   el.hidden = false;
 }
 
+// B3 — "Spin a seed": Math.random() is explicitly allowed here (Invariant 5
+// only forbids it inside the deterministic quiz/paper path); picks a random
+// integer in [100, 99999] and focuses+selects the field so the new value is
+// announced to assistive tech and visibly obvious to sighted players reading
+// the number aloud.
+function handleSpinSeed() {
+  const input = document.getElementById('seed-input');
+  if (!input) return;
+  const MIN_SEED = 100;
+  const MAX_SEED = 99999;
+  const spun = MIN_SEED + Math.floor(Math.random() * (MAX_SEED - MIN_SEED + 1));
+  input.value = String(spun);
+  setSeedError('');
+  input.focus();
+  try { input.select(); } catch (_err) { /* selection unsupported — focus alone still helps */ }
+}
+
+// ---------------------------------------------------------------------------
+// B1 — sticky quiz header: live "answered N/20" + "MM:SS" timer.
+// ---------------------------------------------------------------------------
+
+function formatElapsedShort(ms) {
+  const totalSeconds = Math.max(0, Math.round((Number(ms) || 0) / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+}
+
+// Answered-count updates from the A2 delegated input/change listeners
+// (via autosaveTick) — never a re-render, just this one element's text.
+function updateProgressDisplay() {
+  const el = document.getElementById('quiz-progress');
+  if (!el || !session) return;
+  const total = session.paper.length;
+  let answered = 0;
+  for (const q of session.paper) {
+    const v = session.answers[q.id];
+    if (v !== null && v !== undefined && v !== '') answered += 1;
+  }
+  el.textContent = 'answered ' + answered + '/' + total;
+}
+
+function updateTimerDisplay() {
+  const el = document.getElementById('quiz-timer');
+  if (!el || !session || session.startedAt == null) return;
+  el.textContent = formatElapsedShort(Date.now() - session.startedAt);
+}
+
+// Always clearInterval before any setInterval (Invariant per B1) — called on
+// every quiz entry AND every quiz exit, so there is never more than one live
+// handle no matter how screens are re-entered.
+function stopQuizTimer() {
+  if (timerHandle != null) {
+    clearInterval(timerHandle);
+    timerHandle = null;
+  }
+}
+
+function startQuizTimer() {
+  stopQuizTimer();
+  updateTimerDisplay();
+  timerHandle = window.setInterval(updateTimerDisplay, 1000);
+}
+
+// ---------------------------------------------------------------------------
+// B2 — unanswered-submit guard (idle -> confirming -> marked state machine).
+// ---------------------------------------------------------------------------
+
+function countBlankAnswers(paper, answers) {
+  let blanks = 0;
+  for (const q of paper) {
+    const v = answers[q.id];
+    if (v === null || v === undefined || v === '') blanks += 1;
+  }
+  return blanks;
+}
+
+function showSubmitGuard(blankCount) {
+  submitState = 'confirming';
+  const guard = document.getElementById('submit-guard');
+  const text = document.getElementById('submit-guard-text');
+  const submitBtn = document.getElementById('submit-btn');
+  if (text) text.textContent = blankCount + ' unanswered — blanks score 0.';
+  if (guard) guard.hidden = false;
+  if (submitBtn) submitBtn.hidden = true; // one actionable submit affordance at a time
+  const anywayBtn = document.getElementById('submit-anyway-btn');
+  if (anywayBtn) anywayBtn.focus(); // Invariant 7 — move focus into the injected alert
+}
+
+// Back to `idle`: used by "Keep going" AND by any answer change while
+// confirming (the guard's premise — the blank count — may no longer hold).
+function hideSubmitGuard() {
+  submitState = 'idle';
+  const guard = document.getElementById('submit-guard');
+  const submitBtn = document.getElementById('submit-btn');
+  if (guard) guard.hidden = true;
+  if (submitBtn) submitBtn.hidden = false;
+}
+
+// Reset the guard to a clean `idle` state for a brand-new quiz (fresh start,
+// resume, or restart) — the guard's DOM nodes are static/reused across
+// papers, so nothing here is implicit.
+function resetSubmitGuard() {
+  hideSubmitGuard();
+}
+
 function handleStart() {
   if (!bank) {
     setSeedError('The question bank is still loading. Try again in a moment.');
@@ -213,12 +335,17 @@ function handleStart() {
   persistNow();
 
   hideResumeNotice();
+  resetSubmitGuard();
   renderQuiz(paper, session.seed, getBankVersion());
   showScreen('screen-quiz');
+  updateProgressDisplay();
+  startQuizTimer(); // B1 — started when the quiz screen shows
 }
 
 function handleRestart() {
   // "New paper" — clears the autosaved session only; lastGame/history stay.
+  stopQuizTimer(); // B1 — cleared on restart
+  resetSubmitGuard();
   clearSession();
   persisted.session = null;
   session = null;
@@ -258,6 +385,8 @@ function collectAnswers(paper) {
 // A2 — autosave: mirror the live form into both the in-memory session and the
 // persisted session, debounced to <=1 write/500ms. Called from delegated
 // `input` (keystrokes) and `change` (radios, and text-field blur) listeners.
+// Also drives B1's live answered-count and B2's "any answer change ->
+// idle" guard-collapse rule.
 function autosaveTick() {
   if (!session) return;
   session.answers = collectAnswers(session.paper);
@@ -270,13 +399,47 @@ function autosaveTick() {
     persisted.session.answers = out;
   }
   scheduleAutosave();
+  updateProgressDisplay();
+  if (submitState === 'confirming') hideSubmitGuard();
 }
 
-function handleSubmit() {
+// B2 — the ONE submit funnel: both #submit-btn's click and quiz-form's
+// native `submit` event (Enter key, via the default-button mechanism) call
+// this. `idle` + >=1 blank renders the inline confirm and stops here WITHOUT
+// marking or latching `resultsShown`; `idle` + zero blanks marks directly,
+// same as before B2 existed.
+function requestSubmit() {
   if (!session || resultsShown) return;
-  resultsShown = true;
+  if (submitState === 'confirming') return; // guard already showing — ignore repeats
 
   const answers = collectAnswers(session.paper);
+  session.answers = answers;
+  const blanks = countBlankAnswers(session.paper, answers);
+  if (blanks > 0) {
+    showSubmitGuard(blanks);
+    return;
+  }
+  finalizeSubmit(answers);
+}
+
+// #submit-anyway-btn — the ONLY path out of `confirming` that marks, and it
+// marks exactly once (guarded by the same `resultsShown` latch as always).
+function handleSubmitAnyway() {
+  if (submitState !== 'confirming' || resultsShown) return;
+  hideSubmitGuard();
+  finalizeSubmit(collectAnswers(session.paper));
+}
+
+// #keep-going-btn — back to `idle`, remove the confirm, no marking.
+function handleKeepGoing() {
+  hideSubmitGuard();
+}
+
+function finalizeSubmit(answers) {
+  if (!session || resultsShown) return;
+  resultsShown = true;
+  stopQuizTimer(); // B1 — cleared on submit
+
   session.answers = answers;
   session.submittedAt = Date.now();
   const elapsedMs = Math.max(0, session.submittedAt - (session.startedAt || session.submittedAt));
@@ -310,6 +473,7 @@ function handleSubmit() {
   persistNow();
 
   hideResumeNotice();
+  resetSubmitGuard();
   renderResults(lastResult, session.seed);
   showScreen('screen-results');
 }
@@ -404,11 +568,14 @@ function tryRestoreSession(sessionData) {
   };
   lastResult = null;
   resultsShown = false;
+  resetSubmitGuard();
 
   renderQuiz(paper, session.seed, getBankVersion());
   restoreAnswersIntoForm(paper, answers);
   showScreen('screen-quiz');
   showResumeNotice();
+  updateProgressDisplay();
+  startQuizTimer(); // B1 — keeps the stored startedAt's clock running
   return true;
 }
 
@@ -442,6 +609,8 @@ function tryRestoreLastGame(lastGame) {
   };
   lastResult = result;
   resultsShown = true;
+  stopQuizTimer(); // B1 — defensive; no timer should be running at boot
+  resetSubmitGuard();
 
   renderResults(result, lastGame.seed);
   showScreen('screen-results');
@@ -589,7 +758,22 @@ function wireEvents() {
     }
     if (target.closest('#submit-btn')) {
       event.preventDefault();
-      handleSubmit();
+      requestSubmit();
+      return;
+    }
+    if (target.closest('#submit-anyway-btn')) {
+      event.preventDefault();
+      handleSubmitAnyway();
+      return;
+    }
+    if (target.closest('#keep-going-btn')) {
+      event.preventDefault();
+      handleKeepGoing();
+      return;
+    }
+    if (target.closest('#spin-seed-btn')) {
+      event.preventDefault();
+      handleSpinSeed();
       return;
     }
     if (target.closest('#restart-btn')) {
@@ -609,11 +793,14 @@ function wireEvents() {
     }
   });
 
-  // Guard against a full-page reload if #submit-btn is a form submit button.
+  // B2 — the same submit funnel as #submit-btn's click: #submit-btn is the
+  // quiz form's default button (type="submit" + form="quiz-form"), so Enter
+  // in any quiz field fires this via the browser's implicit-submission
+  // mechanism. preventDefault() here also guards against a full-page reload.
   document.addEventListener('submit', (event) => {
     if (event.target && event.target.id === 'quiz-form') {
       event.preventDefault();
-      handleSubmit();
+      requestSubmit();
     }
   });
 
