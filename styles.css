@@ -17,6 +17,11 @@
   --color-accent: #e8557f;
   --color-on-accent: #ffffff;
 
+  /* Supporting accents for the header decoration (light theme). */
+  --color-accent-2: #7c5cff;
+  --color-accent-3: #00a884;
+  --color-accent-4: #f5a623;
+
   /* Radius Lock */
   --radius: 10px;
   --radius-sm: 6px;
@@ -58,6 +63,11 @@
     --color-muted: #9ba6b1;
     --color-border: #192a3c;
     --color-sand: #0b1626;
+
+    /* Brighter supporting accents so the decoration reads on dark. */
+    --color-accent-2: #9d85ff;
+    --color-accent-3: #2dd4a8;
+    --color-accent-4: #ffbe4d;
   }
 }
 
@@ -1276,4 +1286,269 @@ button {
 
 .leaderboard-actions {
   display: flex;
+}
+
+/* ------------------------------------------------- Header decoration (fun) */
+/* A slim rainbow ribbon across the very top of the page. */
+#app::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--color-accent),
+    var(--color-accent-4) 35%,
+    var(--color-accent-3) 68%,
+    var(--color-accent-2)
+  );
+  z-index: 10;
+}
+
+.app-header__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+/* The big nerdy mascot: a tilted emoji on a soft multicolour tile. */
+.app-header__emoji {
+  font-size: clamp(2.4rem, 8vw, 3.2rem);
+  line-height: 1;
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    135deg,
+    rgba(232, 85, 127, 0.16),
+    rgba(124, 92, 255, 0.16) 55%,
+    rgba(0, 168, 132, 0.16)
+  );
+  box-shadow: var(--shadow-md);
+  transform: rotate(-6deg);
+}
+
+.app-header__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Gradient ink for the title; the solid color stays as a fallback. */
+.app-header__title {
+  color: var(--color-accent);
+  background: linear-gradient(
+    92deg,
+    var(--color-accent),
+    var(--color-accent-2) 55%,
+    var(--color-accent-3)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Eyebrow as a small colourful pill chip. */
+.eyebrow--chip {
+  align-self: flex-start;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  color: var(--color-accent-2);
+  background: rgba(124, 92, 255, 0.10);
+  border: 1px solid rgba(124, 92, 255, 0.28);
+}
+
+/* ------------------------------------------------------------------ Pause */
+/* Same hidden-vs-display clash as the overlay: .btn sets inline-flex. */
+.quiz-status__pause[hidden] {
+  display: none;
+}
+
+.quiz-status__pause {
+  min-height: 32px;
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+/* While paused the questions and submit row are fully removed from view
+   (and from tab order) — the overlay is the only thing on screen. */
+#screen-quiz.screen--paused #quiz-form,
+#screen-quiz.screen--paused .quiz-actions {
+  display: none;
+}
+
+/* The class sets display:flex, which would otherwise defeat the `hidden`
+   attribute's UA display:none — restate it with higher specificity. */
+.pause-overlay[hidden] {
+  display: none;
+}
+
+.pause-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-7) var(--space-5);
+  text-align: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.pause-overlay__emoji {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.pause-overlay__title {
+  font-size: 1.25rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.pause-overlay__note {
+  color: var(--color-muted);
+}
+
+.pause-overlay .btn {
+  margin-top: var(--space-2);
+}
+
+/* -------------------------------------------- Floating background shapes */
+/* Kindergarten-video vibe: soft 2D shapes drifting very slowly behind the
+   page. Fixed, non-interactive, and behind all content (negative z-index). */
+.bg-shapes {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bg-shape {
+  position: absolute;
+  opacity: 0.14;
+  animation: bg-drift 24s ease-in-out infinite alternate;
+}
+
+@media (prefers-color-scheme: dark) {
+  .bg-shape {
+    opacity: 0.1;
+  }
+}
+
+@keyframes bg-drift {
+  from {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  to {
+    transform: translate(24px, -36px) rotate(14deg);
+  }
+}
+
+@keyframes bg-drift-alt {
+  from {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  to {
+    transform: translate(-30px, 28px) rotate(-12deg);
+  }
+}
+
+.bg-shape--circle {
+  top: 12%;
+  left: 6%;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: var(--color-accent-4);
+  animation-duration: 26s;
+}
+
+.bg-shape--ring {
+  top: 58%;
+  left: 84%;
+  width: 110px;
+  height: 110px;
+  border: 14px solid var(--color-accent-2);
+  border-radius: 50%;
+  animation-name: bg-drift-alt;
+  animation-duration: 30s;
+}
+
+.bg-shape--square {
+  top: 76%;
+  left: 10%;
+  width: 70px;
+  height: 70px;
+  border-radius: var(--radius);
+  background: var(--color-accent-3);
+  transform: rotate(12deg);
+  animation-name: bg-drift-alt;
+  animation-duration: 22s;
+}
+
+.bg-shape--triangle {
+  top: 8%;
+  left: 78%;
+  width: 0;
+  height: 0;
+  border-left: 45px solid transparent;
+  border-right: 45px solid transparent;
+  border-bottom: 78px solid var(--color-accent);
+  animation-duration: 28s;
+  animation-delay: -8s;
+}
+
+.bg-shape--plus {
+  top: 38%;
+  left: 2%;
+  width: 64px;
+  height: 64px;
+  animation-duration: 20s;
+  animation-delay: -12s;
+}
+
+.bg-shape--plus::before,
+.bg-shape--plus::after {
+  content: '';
+  position: absolute;
+  background: var(--color-accent-2);
+  border-radius: var(--radius-sm);
+}
+
+.bg-shape--plus::before {
+  left: 24px;
+  top: 0;
+  width: 16px;
+  height: 64px;
+}
+
+.bg-shape--plus::after {
+  left: 0;
+  top: 24px;
+  width: 64px;
+  height: 16px;
+}
+
+.bg-shape--dot {
+  top: 86%;
+  left: 68%;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  animation-name: bg-drift-alt;
+  animation-duration: 18s;
+  animation-delay: -5s;
+}
+
+/* Respect reduced-motion: shapes stay, drifting stops. */
+@media (prefers-reduced-motion: reduce) {
+  .bg-shape {
+    animation: none;
+  }
 }

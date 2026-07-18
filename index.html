@@ -4,14 +4,30 @@
 <meta name="theme-color" content="#faf8f5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#010610" media="(prefers-color-scheme: dark)">
 <meta name="description" content="A seeded, offline-capable P6 Math recall challenge. Agree on a number, get the same 20-question paper on every phone, mark and share your score.">
-<title>Smarty Challenge</title>
+<title>🤓 Smarty Challenge</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤓</text></svg>">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="styles.css">
 
+<!-- Slow-floating background shapes — pure decoration, never interactive. -->
+<div class="bg-shapes" aria-hidden="true">
+  <span class="bg-shape bg-shape--circle"></span>
+  <span class="bg-shape bg-shape--ring"></span>
+  <span class="bg-shape bg-shape--square"></span>
+  <span class="bg-shape bg-shape--triangle"></span>
+  <span class="bg-shape bg-shape--plus"></span>
+  <span class="bg-shape bg-shape--dot"></span>
+</div>
+
 <div id="app">
   <header class="app-header">
-    <p class="eyebrow">P6 Math &middot; Seeded Recall</p>
-    <h1 class="app-header__title">Smarty Challenge</h1>
+    <div class="app-header__row">
+      <span class="app-header__emoji" aria-hidden="true">🤓</span>
+      <div class="app-header__text">
+        <p class="eyebrow eyebrow--chip">P6 Math &middot; Seeded Recall</p>
+        <h1 class="app-header__title">Smarty Challenge</h1>
+      </div>
+    </div>
   </header>
 
   <main class="app-main">
@@ -93,6 +109,13 @@
       <div id="resume-notice" class="resume-notice" role="status" aria-live="polite" hidden>
         <span class="resume-notice__text">Resumed your paper &mdash; clock kept running.</span>
         <button class="btn btn--ghost resume-notice__dismiss" type="button">Dismiss</button>
+      </div>
+
+      <div id="pause-overlay" class="pause-overlay" role="status" aria-live="polite" hidden>
+        <span class="pause-overlay__emoji" aria-hidden="true">&#9749;&#65039;</span>
+        <p class="pause-overlay__title">Paused &mdash; questions hidden</p>
+        <p class="pause-overlay__note">The clock is stopped. Stretch, sip, breathe.</p>
+        <button class="btn btn--primary" id="resume-btn" type="button">Resume the paper</button>
       </div>
 
       <form id="quiz-form">

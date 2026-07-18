@@ -288,6 +288,15 @@ export function renderQuiz(paper, seed, bankVersion) {
         text: '00:00'
       })
     );
+    // Pause lives in the sticky bar so it is reachable mid-scroll; app.js
+    // owns its behavior (stop the clock, cover the questions).
+    statusBar.appendChild(
+      el('button', {
+        class: 'btn btn--ghost quiz-status__pause',
+        attrs: { id: 'pause-btn', type: 'button', 'aria-label': 'Pause and hide the questions' },
+        text: '⏸️ Pause'
+      })
+    );
     const head = screen && screen.querySelector('.screen__head');
     if (head && head.parentNode) {
       head.parentNode.insertBefore(statusBar, head.nextSibling);

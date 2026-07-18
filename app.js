@@ -55,6 +55,15 @@ let submitState = 'idle';
  */
 let timerHandle = null;
 
+/**
+ * Pause state: wall-clock ms when the player paused, or null while running.
+ * Not persisted — a reload while paused simply resumes the clock (same as the
+ * pre-pause behavior on any reload). On resume, session.startedAt is shifted
+ * forward by the paused duration, so elapsed-time math everywhere else
+ * (timer display, submit, tie-breaks) needs no changes.
+ */
+let pausedAt = null;
+
 /** The persisted State (Section 1 contract) — the in-memory mirror of localStorage. */
 let persisted = loadState();
 
@@ -344,9 +353,53 @@ function stopQuizTimer() {
 }
 
 function startQuizTimer() {
+  // Every quiz entry (fresh start, party turn, restore, resume-from-pause)
+  // funnels through here, so this is the ONE place pause UI/state is reset.
+  resetPauseState();
   stopQuizTimer();
   updateTimerDisplay();
   timerHandle = window.setInterval(updateTimerDisplay, 1000);
+}
+
+// ---------------------------------------------------------------------------
+// Pause — covers the questions and stops the clock for a short break.
+// ---------------------------------------------------------------------------
+
+function setPauseUI(paused) {
+  const screen = document.getElementById('screen-quiz');
+  const overlay = document.getElementById('pause-overlay');
+  const pauseBtn = document.getElementById('pause-btn');
+  if (screen) screen.classList.toggle('screen--paused', paused);
+  if (overlay) overlay.hidden = !paused;
+  if (pauseBtn) pauseBtn.hidden = paused;
+}
+
+function resetPauseState() {
+  pausedAt = null;
+  setPauseUI(false);
+}
+
+function handlePauseQuiz() {
+  if (!session || pausedAt != null) return;
+  pausedAt = Date.now();
+  stopQuizTimer(); // freeze the display; the real accounting happens on resume
+  setPauseUI(true);
+  const resumeBtn = document.getElementById('resume-btn');
+  if (resumeBtn) resumeBtn.focus();
+}
+
+function handleResumeQuiz() {
+  if (!session || pausedAt == null) return;
+  const pausedMs = Math.max(0, Date.now() - pausedAt);
+  pausedAt = null;
+  if (session.startedAt != null) {
+    session.startedAt += pausedMs;
+    if (persisted.session) {
+      persisted.session.startedAt = session.startedAt;
+      persistNow(); // state transition, not a keystroke — not debounced
+    }
+  }
+  startQuizTimer(); // also clears the pause UI via resetPauseState()
 }
 
 // ---------------------------------------------------------------------------
@@ -647,6 +700,7 @@ function autosaveTick() {
 // same as before B2 existed.
 function requestSubmit() {
   if (!session || resultsShown) return;
+  if (pausedAt != null) return; // paused: questions are covered, no submitting
   if (submitState === 'confirming') return; // guard already showing — ignore repeats
 
   const answers = collectAnswers(session.paper);
@@ -1287,6 +1341,16 @@ function wireEvents() {
     if (target.closest('#submit-btn')) {
       event.preventDefault();
       requestSubmit();
+      return;
+    }
+    if (target.closest('#pause-btn')) {
+      event.preventDefault();
+      handlePauseQuiz();
+      return;
+    }
+    if (target.closest('#resume-btn')) {
+      event.preventDefault();
+      handleResumeQuiz();
       return;
     }
     if (target.closest('#submit-anyway-btn')) {
