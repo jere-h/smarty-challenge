@@ -25,13 +25,28 @@ import { dirname, join } from 'node:path';
 import { parseNumeric, checkAnswer, isEquivalentFraction } from '../checkRules.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const BANK_PATH = join(__dirname, '..', 'questions.json');
 
 const VALID_TYPES = new Set(['mcq', 'short-numeric']);
 const VALID_RULES = new Set(['exact', 'tolerance', 'fraction-equivalent']);
-const MIN_TOTAL = 60;
-const MIN_PER_TOPIC = 10;
-const EXPECTED_BANK_VERSION = 3;
+
+// Per-bank expectations: the math bank and the fun-mode riddle bank share the
+// same schema but have their own size/version/id contracts.
+const BANKS = [
+  {
+    file: 'questions.json',
+    minTotal: 60,
+    minPerTopic: 10,
+    expectedVersion: 3,
+    idPattern: /^pm-[a-z]+-\d{2}$/,
+  },
+  {
+    file: 'riddles.json',
+    minTotal: 30,
+    minPerTopic: 10,
+    expectedVersion: 1,
+    idPattern: /^rd-[a-z]+-\d{2}$/,
+  },
+];
 
 const errors = [];
 
@@ -43,11 +58,20 @@ function isPlainObject(v) {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
 }
 
+const summaries = [];
+
+for (const spec of BANKS) {
+  validateBank(spec);
+}
+
+function validateBank(spec) {
+  const BANK_PATH = join(__dirname, '..', spec.file);
+
 let raw;
 try {
   raw = readFileSync(BANK_PATH, 'utf8');
 } catch (err) {
-  console.error(`Could not read questions.json at ${BANK_PATH}: ${err.message}`);
+  console.error(`Could not read ${spec.file} at ${BANK_PATH}: ${err.message}`);
   process.exit(1);
 }
 
@@ -55,30 +79,30 @@ let bank;
 try {
   bank = JSON.parse(raw);
 } catch (err) {
-  console.error(`questions.json is not valid JSON: ${err.message}`);
+  console.error(`${spec.file} is not valid JSON: ${err.message}`);
   process.exit(1);
 }
 
 if (!isPlainObject(bank) || !Array.isArray(bank.questions)) {
-  console.error('questions.json must be an object with a `questions` array.');
+  console.error(`${spec.file} must be an object with a \`questions\` array.`);
   process.exit(1);
 }
 
 // --- bank-level checks -------------------------------------------------
 
-if (bank.bankVersion !== EXPECTED_BANK_VERSION) {
-  fail(null, `bankVersion must be ${EXPECTED_BANK_VERSION}, got ${JSON.stringify(bank.bankVersion)}`);
+if (bank.bankVersion !== spec.expectedVersion) {
+  fail(null, `[${spec.file}] bankVersion must be ${spec.expectedVersion}, got ${JSON.stringify(bank.bankVersion)}`);
 }
 
-if (bank.questions.length < MIN_TOTAL) {
-  fail(null, `bank must have >= ${MIN_TOTAL} questions, got ${bank.questions.length}`);
+if (bank.questions.length < spec.minTotal) {
+  fail(null, `[${spec.file}] bank must have >= ${spec.minTotal} questions, got ${bank.questions.length}`);
 }
 
 // --- per-question checks ------------------------------------------------
 
 const seenIds = new Set();
 const perTopicCount = new Map();
-const ID_PATTERN = /^pm-[a-z]+-\d{2}$/;
+const ID_PATTERN = spec.idPattern;
 
 for (const q of bank.questions) {
   const qid = q && typeof q.id === 'string' ? q.id : '(missing id)';
@@ -180,24 +204,24 @@ for (const q of bank.questions) {
 // --- per-topic minimum ---------------------------------------------------
 
 for (const [topic, count] of perTopicCount) {
-  if (count < MIN_PER_TOPIC) {
-    fail(null, `topic "${topic}" has only ${count} question(s), needs >= ${MIN_PER_TOPIC}`);
+  if (count < spec.minPerTopic) {
+    fail(null, `[${spec.file}] topic "${topic}" has only ${count} question(s), needs >= ${spec.minPerTopic}`);
   }
-}
-
-// --- report ---------------------------------------------------------------
-
-if (errors.length > 0) {
-  console.error(`bank-validate: ${errors.length} problem(s) found in questions.json:\n`);
-  for (const e of errors) console.error(`  - ${e}`);
-  process.exit(1);
 }
 
 const topicSummary = [...perTopicCount.entries()]
   .map(([t, c]) => `${t}: ${c}`)
   .join(', ');
+summaries.push(`${spec.file}: ${bank.questions.length} questions, bankVersion ${bank.bankVersion} (${topicSummary})`);
+}
 
-console.log(
-  `bank-validate: OK — ${bank.questions.length} questions, bankVersion ${bank.bankVersion} (${topicSummary})`
-);
+// --- report ---------------------------------------------------------------
+
+if (errors.length > 0) {
+  console.error(`bank-validate: ${errors.length} problem(s) found:\n`);
+  for (const e of errors) console.error(`  - ${e}`);
+  process.exit(1);
+}
+
+for (const line of summaries) console.log(`bank-validate: OK — ${line}`);
 process.exit(0);

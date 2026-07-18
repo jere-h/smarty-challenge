@@ -27,6 +27,10 @@ import { loadState, saveState, clearSession } from './storage.js';
 /** @type {{schemaVersion:number, bankVersion?:number, subject:string, questions:Array}|null} */
 let bank = null;
 
+/** Fun-mode bank (riddles.json). Loaded at boot beside the math bank; a load
+ * failure only hides the riddle toggle, never blocks the math experience. */
+let riddleBank = null;
+
 /**
  * Session { seed, paper, answers, startedAt, submittedAt }
  * @type {{seed:number, paper:Array, answers:Record<string,string|number|null>, startedAt:number|null, submittedAt?:number}|null}
@@ -103,17 +107,31 @@ function showScreen(id) {
 // Question bank loading
 // ---------------------------------------------------------------------------
 
-async function loadBank() {
-  const url = new URL('./questions.json', import.meta.url);
+async function loadBank(file) {
+  const url = new URL(file || './questions.json', import.meta.url);
   const res = await fetch(url);
   if (!res.ok) throw new Error('Could not load the question bank (' + res.status + ').');
   return res.json();
 }
 
+// The current session's mode: 'math' (default) or 'riddles' (fun mode).
+function sessionMode() {
+  return session && session.mode === 'riddles' ? 'riddles' : 'math';
+}
+
+function bankForMode(mode) {
+  return mode === 'riddles' ? riddleBank : bank;
+}
+
 // A6 — the bank's own version, displayed wherever the seed is displayed so a
 // cached device holding a stale bank can be spotted before phones compare.
+// Riddle papers show as "R<version>" so a math v3 and a riddle v3 can never
+// be mistaken for the same paper.
 function getBankVersion() {
-  return bank && bank.bankVersion != null ? bank.bankVersion : 1;
+  const mode = sessionMode();
+  const b = bankForMode(mode);
+  const v = b && b.bankVersion != null ? b.bankVersion : 1;
+  return mode === 'riddles' ? 'R' + v : v;
 }
 
 /**
@@ -166,11 +184,19 @@ function buildTopicBuckets(theBank, target) {
 // resume, and results-restore) — no duplicated sampling logic (A2).
 const VALID_PAPER_SIZES = [5, 10, 20];
 
-function buildPaperForSeed(seedNum, size) {
-  if (!bank) throw new Error('Question bank not loaded.');
+function buildPaperForSeed(seedNum, size, mode) {
+  const b = bankForMode(mode === 'riddles' ? 'riddles' : 'math');
+  if (!b) throw new Error('Question bank not loaded.');
   const target = VALID_PAPER_SIZES.includes(size) ? size : PAPER_SIZE;
-  const buckets = buildTopicBuckets(bank, target);
-  return generatePaper(seedNum, bank, buckets);
+  const buckets = buildTopicBuckets(b, target);
+  return generatePaper(seedNum, b, buckets);
+}
+
+// The landing screen's riddle-mode toggle (fun mode). Only honored when the
+// riddle bank actually loaded.
+function readMode() {
+  const toggle = document.getElementById('riddle-toggle');
+  return toggle && toggle.checked && riddleBank ? 'riddles' : 'math';
 }
 
 // The seed screen's 5/10/20 exam-length picker. Falls back to the classic 20
@@ -488,13 +514,14 @@ function handleStart() {
       return;
     }
     setRosterError('');
-    startParty(parsed.seed, rosterResult.names, readPaperLength());
+    startParty(parsed.seed, rosterResult.names, readPaperLength(), readMode());
     return;
   }
 
+  const mode = readMode();
   let paper;
   try {
-    paper = buildPaperForSeed(parsed.seed, readPaperLength());
+    paper = buildPaperForSeed(parsed.seed, readPaperLength(), mode);
   } catch (err) {
     setSeedError('Could not build a paper from this bank: ' + (err && err.message ? err.message : String(err)));
     return;
@@ -506,13 +533,14 @@ function handleStart() {
     paper,
     answers: Object.create(null),
     startedAt,
+    mode,
   };
   lastResult = null;
   resultsShown = false;
 
   // A2 — write the fresh in-progress paper to the autosave slot immediately
   // (not debounced: this is a state transition, not a keystroke).
-  persisted.session = { seed: parsed.seed, startedAt, answers: {}, party: null, paperLen: paper.length };
+  persisted.session = { seed: parsed.seed, startedAt, answers: {}, party: null, paperLen: paper.length, mode };
   persistNow();
 
   hideResumeNotice();
@@ -533,10 +561,10 @@ function handleStart() {
 // leaderboard's "Rematch: new seed") — one paper, roster order preserved,
 // every result slot starts null, `startedAt` null (D2: it is set only the
 // first time a player actually enters the quiz via #interstitial-start-btn).
-function startParty(seedNum, players, paperLen) {
+function startParty(seedNum, players, paperLen, mode) {
   let paper;
   try {
-    paper = buildPaperForSeed(seedNum, paperLen);
+    paper = buildPaperForSeed(seedNum, paperLen, mode);
   } catch (err) {
     setSeedError('Could not build a paper from this bank: ' + (err && err.message ? err.message : String(err)));
     return;
@@ -547,6 +575,7 @@ function startParty(seedNum, players, paperLen) {
     paper,
     answers: Object.create(null),
     startedAt: null,
+    mode: mode === 'riddles' ? 'riddles' : 'math',
     party: {
       players: players.slice(),
       current: 0,
@@ -561,6 +590,7 @@ function startParty(seedNum, players, paperLen) {
     startedAt: null,
     answers: {},
     paperLen: paper.length,
+    mode: mode === 'riddles' ? 'riddles' : 'math',
     party: {
       players: players.slice(),
       current: 0,
@@ -801,6 +831,7 @@ function finalizeSubmit(answers) {
     solo: { answers: cleanAnswers, elapsedMs },
     party: null,
     paperLen: session.paper.length,
+    mode: sessionMode(),
   };
   persisted.history = Array.isArray(persisted.history) ? persisted.history : [];
   persisted.history.unshift({
@@ -891,6 +922,7 @@ function finalizePartyTurn(elapsedMs) {
         results: party.results.slice(),
       },
       paperLen: session.paper.length,
+      mode: sessionMode(),
     };
     persisted.session = null;
     persistNow();
@@ -1035,7 +1067,7 @@ function tryRestoreSession(sessionData) {
 
   let paper;
   try {
-    paper = buildPaperForSeed(sessionData.seed, Number(sessionData.paperLen) || undefined);
+    paper = buildPaperForSeed(sessionData.seed, Number(sessionData.paperLen) || undefined, sessionData.mode);
   } catch (_err) {
     return false; // regeneration failure -> drop (Restore-failure rule)
   }
@@ -1050,6 +1082,7 @@ function tryRestoreSession(sessionData) {
     paper,
     answers: { ...answers },
     startedAt: typeof sessionData.startedAt === 'number' ? sessionData.startedAt : Date.now(),
+    mode: sessionData.mode === 'riddles' ? 'riddles' : 'math',
   };
   lastResult = null;
   resultsShown = false;
@@ -1077,7 +1110,7 @@ function tryRestorePartySession(sessionData) {
 
   let paper;
   try {
-    paper = buildPaperForSeed(sessionData.seed, Number(sessionData.paperLen) || undefined);
+    paper = buildPaperForSeed(sessionData.seed, Number(sessionData.paperLen) || undefined, sessionData.mode);
   } catch (_err) {
     return false; // regeneration failure -> drop (Restore-failure rule)
   }
@@ -1122,7 +1155,7 @@ function tryRestoreLastGame(lastGame) {
 
   let paper;
   try {
-    paper = buildPaperForSeed(lastGame.seed, Number(lastGame.paperLen) || undefined);
+    paper = buildPaperForSeed(lastGame.seed, Number(lastGame.paperLen) || undefined, lastGame.mode);
   } catch (_err) {
     return false;
   }
@@ -1141,6 +1174,7 @@ function tryRestoreLastGame(lastGame) {
     answers: { ...answers },
     startedAt: null,
     submittedAt: lastGame.finishedAt,
+    mode: lastGame.mode === 'riddles' ? 'riddles' : 'math',
   };
   lastResult = result;
   resultsShown = true;
@@ -1167,7 +1201,7 @@ function tryRestorePartyLastGame(lastGame) {
 
   let paper;
   try {
-    paper = buildPaperForSeed(lastGame.seed, Number(lastGame.paperLen) || undefined);
+    paper = buildPaperForSeed(lastGame.seed, Number(lastGame.paperLen) || undefined, lastGame.mode);
   } catch (_err) {
     return false;
   }
@@ -1212,9 +1246,10 @@ function readUrlChallenge() {
     return {
       game: game && /^\d{4}$/.test(game) ? game : null,
       len: VALID_PAPER_SIZES.includes(len) ? len : null,
+      mode: params.get('mode') === 'riddles' ? 'riddles' : null,
     };
   } catch (_err) {
-    return { game: null, len: null };
+    return { game: null, len: null, mode: null };
   }
 }
 
@@ -1227,6 +1262,10 @@ function applyUrlChallenge(challenge) {
   if (challenge.len) {
     const radio = document.querySelector('.length-pill input[value="' + challenge.len + '"]');
     if (radio) radio.checked = true;
+  }
+  if (challenge.mode === 'riddles') {
+    const toggle = document.getElementById('riddle-toggle');
+    if (toggle) toggle.checked = true;
   }
 }
 
@@ -1301,6 +1340,7 @@ function buildChallengeUrl() {
     u.hash = '';
     u.searchParams.set('game', String(session.seed));
     u.searchParams.set('len', String(session.paper.length));
+    if (sessionMode() === 'riddles') u.searchParams.set('mode', 'riddles');
     return u.toString();
   } catch (_err) {
     return null;
@@ -1593,11 +1633,20 @@ async function boot() {
   showScreen('screen-seed');
 
   try {
-    bank = await loadBank();
+    bank = await loadBank('./questions.json');
   } catch (err) {
     setSeedError(err && err.message ? err.message : 'Could not load the question bank.');
     // A bank LOAD failure preserves stored state untouched — no restore attempt.
     return;
+  }
+
+  // Fun mode: the riddle bank rides along; a failure only hides the toggle.
+  try {
+    riddleBank = await loadBank('./riddles.json');
+  } catch (_err) {
+    riddleBank = null;
+    const toggleRow = document.querySelector('.riddle-toggle');
+    if (toggleRow) toggleRow.hidden = true;
   }
 
   attemptRestore();
