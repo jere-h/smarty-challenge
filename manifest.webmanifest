@@ -1,7 +1,7 @@
 {
   "name": "Smarty Challenge",
   "short_name": "Smarty",
-  "description": "Race your friends on the same P6 Math paper. Works offline.",
+  "description": "Race your friends on primary school math or riddles. Works offline.",
   "id": "/",
   "start_url": ".",
   "scope": ".",
