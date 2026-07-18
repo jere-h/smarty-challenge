@@ -192,11 +192,11 @@ function buildPaperForSeed(seedNum, size, mode) {
   return generatePaper(seedNum, b, buckets);
 }
 
-// The landing screen's riddle-mode toggle (fun mode). Only honored when the
-// riddle bank actually loaded.
+// The landing screen's Math/Riddles mode pills. Riddles is only honored when
+// the riddle bank actually loaded.
 function readMode() {
-  const toggle = document.getElementById('riddle-toggle');
-  return toggle && toggle.checked && riddleBank ? 'riddles' : 'math';
+  const checked = document.querySelector('input[name="game-mode"]:checked');
+  return checked && checked.value === 'riddles' && riddleBank ? 'riddles' : 'math';
 }
 
 // The seed screen's 5/10/20 exam-length picker. Falls back to the classic 20
@@ -1264,8 +1264,8 @@ function applyUrlChallenge(challenge) {
     if (radio) radio.checked = true;
   }
   if (challenge.mode === 'riddles') {
-    const toggle = document.getElementById('riddle-toggle');
-    if (toggle) toggle.checked = true;
+    const radio = document.querySelector('input[name="game-mode"][value="riddles"]');
+    if (radio) radio.checked = true;
   }
 }
 
@@ -1645,8 +1645,8 @@ async function boot() {
     riddleBank = await loadBank('./riddles.json');
   } catch (_err) {
     riddleBank = null;
-    const toggleRow = document.querySelector('.riddle-toggle');
-    if (toggleRow) toggleRow.hidden = true;
+    const riddlePill = document.querySelector('.mode-pill--riddles');
+    if (riddlePill) riddlePill.hidden = true;
   }
 
   attemptRestore();

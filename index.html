@@ -27,7 +27,6 @@
     <div class="app-header__row">
       <span class="app-header__emoji" aria-hidden="true">🤓</span>
       <div class="app-header__text">
-        <p class="eyebrow eyebrow--chip">P6 Math Quiz</p>
         <h1 class="app-header__title">Smarty Challenge</h1>
       </div>
     </div>
@@ -40,7 +39,18 @@
       <div class="seed-hero">
         <div class="seed-hero__orb" aria-hidden="true"></div>
         <div class="seed-hero__inner">
-          <h2 id="screen-seed-title" class="seed-hero__title">Agree on a number, get the same paper</h2>
+          <h2 id="screen-seed-title" class="sr-only">Choose a mode and start a paper</h2>
+          <fieldset class="mode-picker" id="mode-picker">
+            <legend class="sr-only">Game mode</legend>
+            <label class="mode-pill">
+              <input type="radio" name="game-mode" value="math" checked>
+              <span><span class="mode-pill__emoji" aria-hidden="true">&#128208;</span> Math</span>
+            </label>
+            <label class="mode-pill mode-pill--riddles">
+              <input type="radio" name="game-mode" value="riddles">
+              <span><span class="mode-pill__emoji" aria-hidden="true">&#129513;</span> Riddles</span>
+            </label>
+          </fieldset>
 
           <form class="seed-form" id="seed-form" novalidate>
             <label class="seed-form__label" for="seed-input">Pick a 4 digit number</label>
@@ -81,11 +91,6 @@
                 </label>
               </div>
             </fieldset>
-
-            <label class="party-toggle riddle-toggle" for="riddle-toggle">
-              <input class="party-toggle__input" type="checkbox" id="riddle-toggle" name="riddle-toggle">
-              <span class="party-toggle__label">&#129513; Riddle mode &mdash; logic teasers instead of math</span>
-            </label>
 
             <div class="party-mode" id="party-mode">
               <label class="party-toggle" for="party-toggle">

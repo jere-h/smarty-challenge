@@ -1725,3 +1725,73 @@ button {
   font-size: 0.85rem;
   padding: var(--space-1) var(--space-3);
 }
+
+/* -------------------------------------------------------- Mode picker pills */
+/* Math vs Riddles — the hero's headline control, replacing the old title. */
+.mode-picker {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: var(--space-2);
+}
+
+.mode-pill {
+  flex: 1;
+}
+
+.mode-pill input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  border: 0;
+}
+
+.mode-pill span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 48px;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  font-size: 1.05rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: background-color 0.2s var(--ease), border-color 0.2s var(--ease), color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+.mode-pill__emoji {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+/* Inner spans inherit the pill layout; keep the emoji span from stretching. */
+.mode-pill span span {
+  display: inline;
+  width: auto;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.mode-pill input:checked + span {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-on-accent);
+  box-shadow: var(--shadow-md);
+}
+
+.mode-pill input:focus-visible + span {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
