@@ -1,0 +1,114 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#faf8f5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#010610" media="(prefers-color-scheme: dark)">
+<meta name="description" content="A seeded, offline-capable P5 Math recall challenge. Agree on a number, get the same 20-question paper on every phone, mark and share your score.">
+<title>Seeded PSLE Recall Challenge</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="styles.css">
+
+<div id="app">
+  <header class="app-header">
+    <p class="eyebrow">P5 Math &middot; Seeded Recall</p>
+    <h1 class="app-header__title">Seeded PSLE Recall Challenge</h1>
+  </header>
+
+  <main class="app-main">
+
+    <!-- ============ SEED ENTRY ============ -->
+    <section id="screen-seed" class="screen screen--active" aria-labelledby="screen-seed-title">
+      <div class="seed-hero">
+        <div class="seed-hero__orb" aria-hidden="true"></div>
+        <div class="seed-hero__inner">
+          <p class="eyebrow">Step 1 of 3</p>
+          <h2 id="screen-seed-title" class="seed-hero__title">Agree on a number, get the same paper</h2>
+          <p class="seed-hero__lead">
+            Say a number out loud with your friends. Everyone types it in and gets the
+            exact same 20 questions in the exact same order. No accounts, no server,
+            no internet needed once the app has loaded once.
+          </p>
+
+          <form class="seed-form" id="seed-form" novalidate>
+            <label class="seed-form__label" for="seed-input">Shared seed number</label>
+            <input
+              class="seed-form__field"
+              id="seed-input"
+              name="seed"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              spellcheck="false"
+              value="1234"
+              aria-describedby="seed-hint seed-error">
+            <p class="seed-form__hint" id="seed-hint">
+              A whole number, zero or above. The same number always builds the same paper.
+            </p>
+            <p class="seed-form__error" id="seed-error" role="alert" aria-live="polite"></p>
+            <button class="btn btn--primary" id="start-btn" type="submit">Start the paper</button>
+          </form>
+
+          <div class="offline-indicator" id="offline-indicator" role="status" aria-live="polite">
+            <span class="offline-indicator__dot" aria-hidden="true"></span>
+            <span class="offline-indicator__text">Loading questions&hellip;</span>
+          </div>
+          <p class="offline-note">
+            Open this app once while you have wifi. After that it works with the
+            connection off, so it is ready during a flight, a bus ride, or anywhere
+            the signal drops.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ QUIZ ============ -->
+    <section id="screen-quiz" class="screen screen--hidden" aria-labelledby="screen-quiz-title">
+      <div class="screen__head">
+        <p class="eyebrow">Step 2 of 3</p>
+        <h2 id="screen-quiz-title" class="screen__title">Your 20 questions</h2>
+        <p class="screen__lead" id="quiz-meta">Seed <span class="mono" id="quiz-seed">1234</span> &middot; answer what you can, blanks count as wrong.</p>
+      </div>
+
+      <form id="quiz-form">
+        <!-- render.js injects .question blocks here -->
+      </form>
+
+      <div class="quiz-actions">
+        <button class="btn btn--primary" id="submit-btn" type="button">Submit and mark</button>
+      </div>
+    </section>
+
+    <!-- ============ RESULTS ============ -->
+    <section id="screen-results" class="screen screen--hidden" aria-labelledby="screen-results-title">
+      <div class="screen__head">
+        <p class="eyebrow">Step 3 of 3</p>
+        <h2 id="screen-results-title" class="screen__title">Your result</h2>
+        <p class="screen__lead">Seed <span class="mono" id="results-seed">1234</span> &middot; compare with your friends.</p>
+      </div>
+
+      <div id="results">
+        <!-- render.js injects .results-layout, .grid, and .share here -->
+      </div>
+
+      <div class="results-actions">
+        <button class="btn btn--ghost" id="restart-btn" type="button">New paper</button>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <p class="app-footer__note">Runs fully on your phone. Nothing you type leaves the device.</p>
+  </footer>
+</div>
+
+<script type="module" src="app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () {
+        /* offline precache is an enhancement; the app still runs without it */
+      });
+    });
+  }
+</script>
