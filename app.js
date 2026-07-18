@@ -64,6 +64,13 @@ let timerHandle = null;
  */
 let pausedAt = null;
 
+/**
+ * Scroll position at the moment of pausing. Hiding the questions collapses
+ * the page height (scroll snaps to top), so resume restores the reader to
+ * the exact question they stopped at.
+ */
+let pauseScrollY = 0;
+
 /** The persisted State (Section 1 contract) — the in-memory mirror of localStorage. */
 let persisted = loadState();
 
@@ -382,8 +389,10 @@ function resetPauseState() {
 function handlePauseQuiz() {
   if (!session || pausedAt != null) return;
   pausedAt = Date.now();
+  pauseScrollY = window.scrollY || 0;
   stopQuizTimer(); // freeze the display; the real accounting happens on resume
   setPauseUI(true);
+  window.scrollTo(0, 0); // the overlay is at the top of the (now short) page
   const resumeBtn = document.getElementById('resume-btn');
   if (resumeBtn) resumeBtn.focus();
 }
@@ -400,6 +409,8 @@ function handleResumeQuiz() {
     }
   }
   startQuizTimer(); // also clears the pause UI via resetPauseState()
+  window.scrollTo(0, pauseScrollY); // back to the question they stopped at
+  pauseScrollY = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -622,6 +633,27 @@ function goToSeedScreenFromResults() {
   hideResumeNotice();
   renderSeedScreen();
   showScreen('screen-seed');
+}
+
+// #cancel-attempt-btn — abandons the paper mid-quiz (typical case: a
+// mistyped seed) after an explicit confirm. Reuses the results-screen reset
+// helper, then prefills the just-abandoned seed selected for a quick fix.
+function handleCancelAttempt() {
+  if (!session) return;
+  const ok = window.confirm(
+    'Cancel this attempt and go back? Your answers here will be lost.'
+  );
+  if (!ok) return;
+  const abandonedSeed = session.seed;
+  resetPauseState();
+  goToSeedScreenFromResults();
+  const input = document.getElementById('seed-input');
+  if (input && abandonedSeed != null) {
+    input.value = String(abandonedSeed);
+    setSeedError('');
+    input.focus();
+    try { input.select(); } catch (_err) { /* selection unsupported — focus alone still helps */ }
+  }
 }
 
 // #rematch-btn — "Rematch: new seed": spins a fresh seed (reusing B3's
@@ -1351,6 +1383,11 @@ function wireEvents() {
     if (target.closest('#resume-btn')) {
       event.preventDefault();
       handleResumeQuiz();
+      return;
+    }
+    if (target.closest('#cancel-attempt-btn')) {
+      event.preventDefault();
+      handleCancelAttempt();
       return;
     }
     if (target.closest('#submit-anyway-btn')) {

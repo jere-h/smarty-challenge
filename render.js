@@ -297,6 +297,15 @@ export function renderQuiz(paper, seed, bankVersion) {
         text: '⏸️ Pause'
       })
     );
+    // Escape hatch for a mistyped seed — confirmed in app.js before anything
+    // is lost.
+    statusBar.appendChild(
+      el('button', {
+        class: 'btn btn--ghost quiz-status__cancel',
+        attrs: { id: 'cancel-attempt-btn', type: 'button' },
+        text: 'Cancel attempt'
+      })
+    );
     const head = screen && screen.querySelector('.screen__head');
     if (head && head.parentNode) {
       head.parentNode.insertBefore(statusBar, head.nextSibling);
@@ -321,7 +330,7 @@ export function renderQuiz(paper, seed, bankVersion) {
 
   // Section eyebrow header.
   form.appendChild(
-    el('p', { class: 'eyebrow', text: 'Same seed - same paper - 20 questions' })
+    el('p', { class: 'eyebrow', text: 'Same number - same paper - 20 questions' })
   );
 
   const blocks = [];
@@ -605,7 +614,7 @@ export function renderResults(result, seed, extras) {
   const meta = el('p', { class: 'score-card__meta mono' });
   meta.appendChild(
     el('span', {
-      text: 'Seed ' + String(seed) + (bankVersion != null ? ' · bank v' + bankVersion : ''),
+      text: 'Game number ' + String(seed) + (bankVersion != null ? ' · set v' + bankVersion : ''),
     })
   );
   scoreCard.appendChild(meta);
@@ -979,7 +988,7 @@ export function renderLeaderboard(players, results, extras) {
   actions.appendChild(
     el('button', {
       class: 'btn btn--primary',
-      text: 'Rematch: new seed',
+      text: 'Rematch: new number',
       attrs: { id: 'leaderboard-rematch-btn', type: 'button' },
     })
   );

@@ -42,12 +42,12 @@ export function buildSummary(seed, result, bankVersion) {
 
   const lines = [
     'Smarty Challenge',
-    `Seed ${seed} · bank v${bank}`,
+    `Game number ${seed} · set v${bank}`,
     `Score ${total}/${maxTotal}  Time ${elapsed}`,
     '',
     grid,
     '',
-    'Same seed, same paper. Beat my time.',
+    'Same number, same paper. Beat my time.',
   ];
   return lines.join('\n');
 }

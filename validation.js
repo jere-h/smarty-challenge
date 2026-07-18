@@ -46,24 +46,24 @@ export function parseSeed(raw) {
   // <input>.value (always a string), but keeping this total makes the function
   // safe to unit-test at its boundaries and safe against odd call sites.
   if (raw === null || raw === undefined) {
-    return { error: 'Enter a seed number to start.' };
+    return { error: 'Enter a game number to start.' };
   }
 
   const value = String(raw).trim();
 
   if (value === '') {
-    return { error: 'Enter a seed number to start.' };
+    return { error: 'Enter a game number to start.' };
   }
 
   // Give negatives their own message: a well-formed negative integer is a
   // different mistake from typing letters, and a clearer hint helps two friends
   // reconcile the number they agreed on aloud.
   if (NEGATIVE_INTEGER_PATTERN.test(value)) {
-    return { error: 'Seed must be a whole number that is 0 or greater.' };
+    return { error: 'The game number must be a whole number that is 0 or greater.' };
   }
 
   if (!INTEGER_PATTERN.test(value)) {
-    return { error: 'Seed must be a whole number, digits only.' };
+    return { error: 'The game number must be made of digits only.' };
   }
 
   // At this point the string is [+]digits. Normalize into the 32-bit key space.

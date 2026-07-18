@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#faf8f5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#010610" media="(prefers-color-scheme: dark)">
-<meta name="description" content="A seeded, offline-capable P6 Math recall challenge. Agree on a number, get the same 20-question paper on every phone, mark and share your score.">
+<meta name="description" content="A P6 Math quiz to play with friends. Agree on a number, get the same 20-question paper on every phone, mark it offline and compare scores.">
 <title>🤓 Smarty Challenge</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤓</text></svg>">
 <link rel="manifest" href="manifest.webmanifest">
@@ -24,7 +24,7 @@
     <div class="app-header__row">
       <span class="app-header__emoji" aria-hidden="true">🤓</span>
       <div class="app-header__text">
-        <p class="eyebrow eyebrow--chip">P6 Math &middot; Seeded Recall</p>
+        <p class="eyebrow eyebrow--chip">P6 Math Quiz</p>
         <h1 class="app-header__title">Smarty Challenge</h1>
       </div>
     </div>
@@ -44,7 +44,7 @@
           </p>
 
           <form class="seed-form" id="seed-form" novalidate>
-            <label class="seed-form__label" for="seed-input">Shared seed number</label>
+            <label class="seed-form__label" for="seed-input">Shared game number</label>
             <div class="seed-form__row">
               <input
                 class="seed-form__field"
@@ -56,7 +56,7 @@
                 spellcheck="false"
                 value="1234"
                 aria-describedby="seed-hint seed-error">
-              <button class="btn btn--ghost seed-form__spin" id="spin-seed-btn" type="button">Spin a seed</button>
+              <button class="btn btn--ghost seed-form__spin" id="spin-seed-btn" type="button">Random number</button>
             </div>
             <p class="seed-form__hint" id="seed-hint">
               A whole number, zero or above. The same number always builds the same paper.
@@ -70,7 +70,7 @@
               </label>
 
               <div class="party-roster" id="party-roster" hidden>
-                <p class="party-roster__hint">Add 2 to 8 names &mdash; everyone plays the same seed in turn.</p>
+                <p class="party-roster__hint">Add 2 to 8 names &mdash; everyone plays the same paper in turn.</p>
                 <div class="party-roster__list" id="party-roster-list">
                   <div class="party-roster__row">
                     <label class="party-roster__label" for="party-player-0">Player 1</label>
@@ -101,9 +101,8 @@
     <!-- ============ QUIZ ============ -->
     <section id="screen-quiz" class="screen screen--hidden" aria-labelledby="screen-quiz-title">
       <div class="screen__head">
-        <p class="eyebrow">Step 2 of 3</p>
-        <h2 id="screen-quiz-title" class="screen__title">Your 20 questions</h2>
-        <p class="screen__lead" id="quiz-meta">Seed <span class="mono" id="quiz-seed">1234</span> &middot; bank v<span class="mono" id="quiz-bank-version">1</span> &middot; answer what you can, blanks count as wrong.</p>
+        <h2 id="screen-quiz-title" class="sr-only">Your questions</h2>
+        <p class="screen__lead" id="quiz-meta">Game number <span class="mono" id="quiz-seed">1234</span> &middot; set v<span class="mono" id="quiz-bank-version">1</span></p>
       </div>
 
       <div id="resume-notice" class="resume-notice" role="status" aria-live="polite" hidden>
@@ -149,7 +148,7 @@
 
       <div class="results-actions" id="results-actions">
         <button class="btn btn--primary" id="rematch-btn" type="button">Rematch: new seed</button>
-        <button class="btn btn--ghost" id="same-seed-btn" type="button">Same seed again</button>
+        <button class="btn btn--ghost" id="same-seed-btn" type="button">Same number again</button>
       </div>
     </section>
 

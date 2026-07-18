@@ -1,7 +1,7 @@
 {
   "name": "Smarty Challenge",
   "short_name": "Smarty",
-  "description": "Agree on a seed, generate the same 20-question P6 Math paper on every phone, mark it offline, and share a spoiler-free result.",
+  "description": "Agree on a number, get the same 20-question P6 Math paper on every phone, mark it offline, and share a spoiler-free result.",
   "id": "/",
   "start_url": ".",
   "scope": ".",

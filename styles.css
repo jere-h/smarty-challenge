@@ -1552,3 +1552,31 @@ button {
     animation: none;
   }
 }
+
+/* ---------------------------------------------------------- Cancel attempt */
+/* Same compact treatment as the pause button; the bar may wrap on narrow
+   screens once it holds progress + timer + two buttons. */
+.quiz-status {
+  flex-wrap: wrap;
+}
+
+.quiz-status__cancel {
+  min-height: 32px;
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  color: var(--color-muted);
+}
+
+/* Visually hidden but available to screen readers (quiz screen heading). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
