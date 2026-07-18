@@ -1,7 +1,7 @@
 {
   "name": "Smarty Challenge",
   "short_name": "Smarty",
-  "description": "Agree on a number, get the same P6 Math paper on every phone, mark it offline, and share a spoiler-free result.",
+  "description": "Race your friends on the same P6 Math paper. Works offline.",
   "id": "/",
   "start_url": ".",
   "scope": ".",
