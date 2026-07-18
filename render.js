@@ -1,4 +1,4 @@
-// render.js — screen painters for the Seeded PSLE Recall Challenge.
+// render.js — screen painters for the Smarty Challenge.
 //
 // Exports (per shared contract):
 //   renderSeedScreen()               -> void

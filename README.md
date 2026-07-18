@@ -1,4 +1,4 @@
-# Seeded PSLE Recall Challenge
+# Smarty Challenge
 
 Built by the Idea-Engine incubate pipeline as a static, GitHub Pages-ready web app.
 

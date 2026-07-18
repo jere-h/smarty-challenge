@@ -1,4 +1,4 @@
-// Seeded PSLE Recall Challenge — hand-written service worker (classic worker, NOT an ES module).
+// Smarty Challenge — hand-written service worker (classic worker, NOT an ES module).
 //
 // The offline promise: after ONE online load, the full generate -> answer -> mark -> share loop
 // works with the network disabled. Everything the app needs (shell + question bank) is precached
@@ -10,7 +10,10 @@
 // session (the old cache keeps serving until the new one is fully installed).
 
 const QUESTION_BANK_VERSION = 1;
-const CACHE_NAME = 'psle-v' + QUESTION_BANK_VERSION;
+const CACHE_NAME = 'smarty-v' + QUESTION_BANK_VERSION;
+// Caches minted under the app's former name; still deleted on activate so
+// devices that installed before the rename don't keep a stale copy around.
+const LEGACY_CACHE_PREFIX = 'psle-v';
 
 // The app shell — everything required to run fully offline. All same-origin, resolved relative to
 // the service-worker scope so it works under a GitHub Pages project subpath.
@@ -59,7 +62,8 @@ self.addEventListener('activate', (event) => {
       const keys = await caches.keys();
       await Promise.all(
         keys
-          .filter((key) => key.startsWith('psle-v') && key !== CACHE_NAME)
+          .filter((key) =>
+            (key.startsWith('smarty-v') || key.startsWith(LEGACY_CACHE_PREFIX)) && key !== CACHE_NAME)
           .map((key) => caches.delete(key))
       );
       await self.clients.claim();

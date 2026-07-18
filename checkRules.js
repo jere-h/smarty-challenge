@@ -1,5 +1,5 @@
 // checkRules.js
-// Pure, unit-testable answer-checking predicates for the Seeded PSLE Recall
+// Pure, unit-testable answer-checking predicates for the Smarty
 // Challenge, plus the ONE canonical short-numeric parser every other module
 // routes through. No DOM, no I/O, no randomness. Imported by marker.js.
 //

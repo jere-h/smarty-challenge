@@ -1,4 +1,4 @@
-// sampler.js — deterministic paper generation for the Seeded PSLE Recall Challenge.
+// sampler.js — deterministic paper generation for the Smarty Challenge.
 //
 // generatePaper(seed, bank, topicBuckets) is the single source of "same seed =>
 // byte-identical paper" on every phone. MT19937 (prng.js) is the ONLY randomness

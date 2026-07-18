@@ -1,6 +1,6 @@
 // validation.js
 //
-// Seed parsing and 32-bit key normalization for the Seeded PSLE Recall
+// Seed parsing and 32-bit key normalization for the Smarty
 // Challenge. This is the single boundary between the spoken/typed seed and the
 // MT19937 PRNG: friends agree on a number aloud, type it in, and every device
 // must derive the SAME uint32 key so the sampled paper is byte-identical.

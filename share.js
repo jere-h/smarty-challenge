@@ -38,7 +38,7 @@ export function buildSummary(seed, result) {
   const grid = buildGrid(result ? result.perQuestion : []);
 
   const lines = [
-    'Seeded PSLE Recall Challenge',
+    'Smarty Challenge',
     `Seed ${seed}`,
     `Score ${total}/${maxTotal}  Time ${elapsed}`,
     '',
