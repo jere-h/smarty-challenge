@@ -1,0 +1,577 @@
+{
+  "schemaVersion": 1,
+  "bankVersion": 1,
+  "subject": "Logic Riddles",
+  "questions": [
+    {
+      "id": "rd-logic-01",
+      "topic": "Logic",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt": "Amy, Ben, and Cara each own exactly one pet: a cat, a dog, or a fish (all different). Amy does not own the dog. Ben owns the fish. Who owns the dog?",
+      "options": [
+        "Cara",
+        "Amy",
+        "Ben",
+        "Can't tell"
+      ],
+      "answer": 0,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "0"
+        ]
+      }
+    },
+    {
+      "id": "rd-logic-02",
+      "topic": "Logic",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "Ann and Bea each either ALWAYS tell the truth or ALWAYS lie. Ann says: 'Both of us are liars.' Who is telling the truth?",
+      "options": [
+        "Ann",
+        "Bea",
+        "Both of them",
+        "Neither of them"
+      ],
+      "answer": 1,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "rd-logic-03",
+      "topic": "Logic",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt": "In a three-person race with no ties, Maya finished ahead of Leo, and Leo finished ahead of Nina. Who finished last?",
+      "options": [
+        "Maya",
+        "Leo",
+        "Nina",
+        "Can't tell"
+      ],
+      "answer": 2,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "2"
+        ]
+      }
+    },
+    {
+      "id": "rd-logic-04",
+      "topic": "Logic",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt": "Rule: a word belongs in the group only if it has a double letter (two identical letters side by side, like the 'ss' in 'grass'). Which word does NOT belong: balloon, kitten, summer, pencil?",
+      "options": [
+        "balloon",
+        "kitten",
+        "summer",
+        "pencil"
+      ],
+      "answer": 3,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "3"
+        ]
+      }
+    },
+    {
+      "id": "rd-logic-05",
+      "topic": "Logic",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "Priya, Quinn, and Ravi each chose a different balloon: red, blue, or green. Priya's balloon is neither red nor green. Quinn's balloon is not green. What color is Ravi's balloon?",
+      "options": [
+        "red",
+        "green",
+        "blue",
+        "Can't tell"
+      ],
+      "answer": 1,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "rd-logic-06",
+      "topic": "Logic",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "Four runners finished a race with no ties: Dev, Ella, Finn, and Gia. Gia finished first. Dev finished somewhere ahead of Ella. Finn did not finish last. Who finished last?",
+      "options": [
+        "Dev",
+        "Finn",
+        "Gia",
+        "Ella"
+      ],
+      "answer": 3,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "3"
+        ]
+      }
+    },
+    {
+      "id": "rd-logic-07",
+      "topic": "Logic",
+      "difficulty": 4,
+      "type": "mcq",
+      "prompt": "Al, Bo, and Cy each either ALWAYS tell the truth or ALWAYS lie. Al says: 'Bo is a liar.' Bo says: 'Cy is a liar.' Cy says: 'Al and Bo are both liars.' Who is the only one telling the truth?",
+      "options": [
+        "Bo",
+        "Al",
+        "Cy",
+        "None of them"
+      ],
+      "answer": 0,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "0"
+        ]
+      }
+    },
+    {
+      "id": "rd-logic-08",
+      "topic": "Logic",
+      "difficulty": 4,
+      "type": "mcq",
+      "prompt": "Tom, Uma, and Vic sit in a row of three chairs: left, middle, right. Each holds a different fruit: apple, banana, or cherry. Tom is not on an end. Vic holds the cherry. Uma sits on the far left. The apple-holder sits somewhere to the LEFT of the banana-holder. Who holds the apple?",
+      "options": [
+        "Tom",
+        "Vic",
+        "Uma",
+        "Can't tell"
+      ],
+      "answer": 2,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "2"
+        ]
+      }
+    },
+    {
+      "id": "rd-logic-09",
+      "topic": "Logic",
+      "difficulty": 4,
+      "type": "short-numeric",
+      "prompt": "Four kids each say something about how many of the four are lying. Aria says 'Exactly one of us is lying.' Ben says 'Exactly two of us are lying.' Cody says 'Exactly three of us are lying.' Dee says 'All four of us are lying.' Each kid either always tells the truth or always lies. How many of the four are lying? (Give a number.)",
+      "answer": "3",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "3"
+        ]
+      }
+    },
+    {
+      "id": "rd-logic-10",
+      "topic": "Logic",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "Four trophies stand in a row (positions 1 to 4, left to right), one per position. The bronze trophy is at the far left. The glass trophy sits immediately to the LEFT of the gold trophy. The gold trophy is somewhere to the right of the silver trophy. Which trophy is at the far right (position 4)?",
+      "options": [
+        "silver",
+        "bronze",
+        "glass",
+        "gold"
+      ],
+      "answer": 3,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "3"
+        ]
+      }
+    },
+    {
+      "id": "rd-numtrick-01",
+      "topic": "Number Tricks",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "I am a two-digit number. My tens digit is exactly 3 more than my ones digit, and the two digits add up to 9. What number am I?",
+      "options": [
+        "36",
+        "54",
+        "63",
+        "72"
+      ],
+      "answer": 2,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "2"
+        ]
+      }
+    },
+    {
+      "id": "rd-numtrick-02",
+      "topic": "Number Tricks",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "Mia is 4 years older than her brother Leo. In 3 years from now, their two ages will add up to 30. How old is Mia now?",
+      "options": [
+        "14",
+        "11",
+        "13",
+        "10"
+      ],
+      "answer": 0,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "0"
+        ]
+      }
+    },
+    {
+      "id": "rd-numtrick-03",
+      "topic": "Number Tricks",
+      "difficulty": 4,
+      "type": "mcq",
+      "prompt": "A notebook and a pencil cost $2.20 in total. The notebook costs exactly $2.00 more than the pencil. How much does the pencil cost?",
+      "options": [
+        "$0.20",
+        "$1.10",
+        "$0.11",
+        "$0.10"
+      ],
+      "answer": 3,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "3"
+        ]
+      }
+    },
+    {
+      "id": "rd-numtrick-04",
+      "topic": "Number Tricks",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "Five friends meet at the park. Each friend shakes hands exactly once with every other friend (and nobody shakes their own hand). How many handshakes happen in total?",
+      "options": [
+        "20",
+        "10",
+        "25",
+        "15"
+      ],
+      "answer": 1,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "rd-numtrick-05",
+      "topic": "Number Tricks",
+      "difficulty": 2,
+      "type": "short-numeric",
+      "prompt": "In a room there are 4 cats, 3 spiders, and 2 people. A cat has 4 legs, a spider has 8 legs, and a person has 2 legs. How many legs are in the room altogether? Give the number.",
+      "answer": "44",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "44"
+        ]
+      }
+    },
+    {
+      "id": "rd-numtrick-06",
+      "topic": "Number Tricks",
+      "difficulty": 4,
+      "type": "mcq",
+      "prompt": "I am a two-digit number. When you swap my two digits, the new number is 18 bigger than me. My two digits add up to 6. What number am I?",
+      "options": [
+        "42",
+        "33",
+        "24",
+        "15"
+      ],
+      "answer": 2,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "2"
+        ]
+      }
+    },
+    {
+      "id": "rd-numtrick-07",
+      "topic": "Number Tricks",
+      "difficulty": 4,
+      "type": "mcq",
+      "prompt": "Grandpa is 5 times as old as his granddaughter Nina right now. In 6 years, Grandpa will be only 3 times as old as Nina. How old is Nina now?",
+      "options": [
+        "5",
+        "6",
+        "10",
+        "12"
+      ],
+      "answer": 1,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "rd-numtrick-08",
+      "topic": "Number Tricks",
+      "difficulty": 3,
+      "type": "short-numeric",
+      "prompt": "A storybook has pages numbered 1, 2, 3, and so on. Tom reads starting on page 8 and stops after finishing page 20, reading every page in between. Counting both page 8 and page 20, how many pages does he read? Give the number.",
+      "answer": "13",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "13"
+        ]
+      }
+    },
+    {
+      "id": "rd-numtrick-09",
+      "topic": "Number Tricks",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt": "You start with 10 stickers in your pocket. You give away all of them except 4. How many stickers do you have left?",
+      "options": [
+        "6",
+        "10",
+        "14",
+        "4"
+      ],
+      "answer": 3,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "3"
+        ]
+      }
+    },
+    {
+      "id": "rd-numtrick-10",
+      "topic": "Number Tricks",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt": "I am a two-digit number that is less than 20. I am an even number, and my two digits add up to 5. What number am I?",
+      "options": [
+        "14",
+        "12",
+        "41",
+        "15"
+      ],
+      "answer": 0,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "0"
+        ]
+      }
+    },
+    {
+      "id": "rd-pattern-01",
+      "topic": "Patterns",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt": "Mia writes a bouncing number pattern: 2, 4, 8, 16, ... Each number is DOUBLE the one before it. What number comes next after 16?",
+      "options": [
+        "18",
+        "24",
+        "32",
+        "20"
+      ],
+      "answer": 2,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "2"
+        ]
+      }
+    },
+    {
+      "id": "rd-pattern-02",
+      "topic": "Patterns",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt": "Leo lines up the letters of the word GARDEN and numbers each letter by its position: G is 1st, A is 2nd, R is 3rd, D is 4th, E is 5th, N is 6th. Which letter sits in the position that is exactly one more than R's position?",
+      "options": [
+        "A",
+        "D",
+        "E",
+        "N"
+      ],
+      "answer": 1,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "rd-pattern-03",
+      "topic": "Patterns",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "A number caterpillar grows like this: 1, 4, 9, 16, 25, ... Each number is a counting number multiplied by itself (1x1, 2x2, 3x3, 4x4, 5x5). What is the very next number in the caterpillar?",
+      "options": [
+        "30",
+        "36",
+        "34",
+        "49"
+      ],
+      "answer": 1,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "rd-pattern-04",
+      "topic": "Patterns",
+      "difficulty": 4,
+      "type": "mcq",
+      "prompt": "Today is a Wednesday. Every 7 days it will be Wednesday again. Counting forward, what day of the week will it be exactly 30 days from today? (Day 7 is a Wednesday, day 14 is a Wednesday, and so on.)",
+      "options": [
+        "Tuesday",
+        "Wednesday",
+        "Friday",
+        "Thursday"
+      ],
+      "answer": 2,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "2"
+        ]
+      }
+    },
+    {
+      "id": "rd-pattern-05",
+      "topic": "Patterns",
+      "difficulty": 2,
+      "type": "mcq",
+      "prompt": "A clock's hour hand points at 3. Every time a bell rings, the hour hand jumps forward exactly 5 hours around the 12-hour clock face. After the bell rings 3 times, which number does the hour hand point at? (After 12 it wraps back to 1.)",
+      "options": [
+        "6",
+        "18",
+        "8",
+        "5"
+      ],
+      "answer": 0,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "0"
+        ]
+      }
+    },
+    {
+      "id": "rd-pattern-06",
+      "topic": "Patterns",
+      "difficulty": 4,
+      "type": "mcq",
+      "prompt": "A pattern reads: 1, 1, 2, 3, 5, 8, ... Starting from the third number, each number is the SUM of the two numbers just before it (1+1=2, 1+2=3, 2+3=5, 3+5=8). What number comes next after 8?",
+      "options": [
+        "11",
+        "13",
+        "16",
+        "10"
+      ],
+      "answer": 1,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "rd-pattern-07",
+      "topic": "Patterns",
+      "difficulty": 3,
+      "type": "mcq",
+      "prompt": "Sam draws one big square. Then he draws a straight line down the middle top-to-bottom, and another straight line across the middle left-to-right, splitting the big square into 4 equal small squares. Counting BOTH the small squares AND the one big square that contains them all, how many squares can Sam count in total?",
+      "options": [
+        "4",
+        "5",
+        "6",
+        "8"
+      ],
+      "answer": 1,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "1"
+        ]
+      }
+    },
+    {
+      "id": "rd-pattern-08",
+      "topic": "Patterns",
+      "difficulty": 3,
+      "type": "short-numeric",
+      "prompt": "A staircase of dots grows in rows. Row 1 has 1 dot, row 2 has 3 dots, row 3 has 5 dots, row 4 has 7 dots. Each row has 2 more dots than the row above it. How many dots are in row 6?",
+      "answer": "11",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "11"
+        ]
+      }
+    },
+    {
+      "id": "rd-pattern-09",
+      "topic": "Patterns",
+      "difficulty": 3,
+      "type": "short-numeric",
+      "prompt": "In one month, the 3rd is a Monday. So the 10th, 17th, and 24th are also Mondays, since each is exactly 7 days later. If this month has 30 days, what is the date number of the LAST Monday of the month? Give the date as a number.",
+      "answer": "24",
+      "check": {
+        "rule": "fraction-equivalent",
+        "accepted": [
+          "24"
+        ]
+      }
+    },
+    {
+      "id": "rd-pattern-10",
+      "topic": "Patterns",
+      "difficulty": 4,
+      "type": "mcq",
+      "prompt": "A number ladder goes down: 100, 90, 81, 73, ... The gap shrinks by 1 each step: subtract 10, then subtract 9, then subtract 8. Following that shrinking-gap rule, what number comes next after 73?",
+      "options": [
+        "66",
+        "65",
+        "64",
+        "67"
+      ],
+      "answer": 0,
+      "check": {
+        "rule": "exact",
+        "accepted": [
+          "0"
+        ]
+      }
+    }
+  ]
+}
