@@ -46,6 +46,30 @@
               A whole number, zero or above. The same number always builds the same paper.
             </p>
             <p class="seed-form__error" id="seed-error" role="alert" aria-live="polite"></p>
+
+            <div class="party-mode" id="party-mode">
+              <label class="party-toggle" for="party-toggle">
+                <input class="party-toggle__input" type="checkbox" id="party-toggle" name="party-toggle">
+                <span class="party-toggle__label">Pass-the-phone with friends</span>
+              </label>
+
+              <div class="party-roster" id="party-roster" hidden>
+                <p class="party-roster__hint">Add 2 to 8 names &mdash; everyone plays the same seed in turn.</p>
+                <div class="party-roster__list" id="party-roster-list">
+                  <div class="party-roster__row">
+                    <label class="party-roster__label" for="party-player-0">Player 1</label>
+                    <input class="party-roster__input" type="text" id="party-player-0" name="party-player-0" autocomplete="off" spellcheck="false" placeholder="Name">
+                  </div>
+                  <div class="party-roster__row">
+                    <label class="party-roster__label" for="party-player-1">Player 2</label>
+                    <input class="party-roster__input" type="text" id="party-player-1" name="party-player-1" autocomplete="off" spellcheck="false" placeholder="Name">
+                  </div>
+                </div>
+                <button class="btn btn--ghost party-roster__add" id="add-player-btn" type="button">Add another player</button>
+                <p class="party-roster__error" id="party-roster-error" role="alert" aria-live="polite"></p>
+              </div>
+            </div>
+
             <button class="btn btn--primary" id="start-btn" type="submit">Start the paper</button>
           </form>
 
@@ -100,9 +124,33 @@
              the answer-review panel, and .share here -->
       </div>
 
-      <div class="results-actions">
+      <div class="results-actions" id="results-actions">
         <button class="btn btn--primary" id="rematch-btn" type="button">Rematch: new seed</button>
         <button class="btn btn--ghost" id="same-seed-btn" type="button">Same seed again</button>
+      </div>
+    </section>
+
+    <!-- ============ PARTY: INTERSTITIAL ============ -->
+    <section id="screen-interstitial" class="screen screen--hidden" aria-labelledby="screen-interstitial-title">
+      <div class="screen__head">
+        <p class="eyebrow">Pass the phone</p>
+        <h2 id="screen-interstitial-title" class="screen__title">Hand the phone to the next player</h2>
+        <p class="screen__lead" id="interstitial-lead">Everyone else look away &mdash; no peeking.</p>
+      </div>
+      <div class="interstitial-actions" id="interstitial-actions">
+        <!-- render.js injects #interstitial-start-btn here -->
+      </div>
+    </section>
+
+    <!-- ============ PARTY: LEADERBOARD ============ -->
+    <section id="screen-leaderboard" class="screen screen--hidden" aria-labelledby="screen-leaderboard-title">
+      <div class="screen__head">
+        <p class="eyebrow">Party results</p>
+        <h2 id="screen-leaderboard-title" class="screen__title">Leaderboard</h2>
+        <p class="screen__lead">Score wins; ties go to the faster time.</p>
+      </div>
+      <div id="leaderboard-body">
+        <!-- render.js injects ranked rows, the answer review, and actions here -->
       </div>
     </section>
 

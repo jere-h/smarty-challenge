@@ -5,11 +5,27 @@
 //   renderQuiz(paper, seed, bankVersion)        -> void  (MCQ + short-numeric inputs)
 //   renderResults(result, seed, extras)         -> void  (score card, per-topic,
 //                                                          emoji grid, answer review)
-//     extras = { paper, answers, bankVersion } — OPTIONAL. When absent, no
-//     answer-review section is rendered at all. When present, `answers` MAY
-//     itself be null to render the review with a correct-answer column only
-//     (Batch D leaderboard use — a per-player answer sheet is out of scope
-//     there even though the data exists).
+//     extras = { paper, answers, bankVersion, partyPlayerName, partyPass } —
+//     OPTIONAL. When absent, no answer-review section is rendered at all.
+//     When present, `answers` MAY itself be null to render the review with a
+//     correct-answer column only (Batch D leaderboard use — a per-player
+//     answer sheet is out of scope there even though the data exists).
+//     `partyPlayerName` (Batch D) — that player's name, shown as a banner on
+//     the score card so a passed-around phone always shows whose card it is.
+//     `partyPass` (Batch D) — `{ nextName }` swaps in a single "Pass to
+//     <nextName>" action appended to `#results` in place of the static
+//     rematch/same-seed row (app.js hides that row itself); omit/null for
+//     the normal solo/end-of-party result screen.
+//   renderInterstitial(name, meta)              -> void  (Batch D "hand the
+//                                                          phone to <name>")
+//   renderLeaderboard(players, results, extras) -> void  (Batch D ranked
+//                                                          leaderboard + C2
+//                                                          answer review)
+//   addPartyRosterRow(index)                    -> HTMLInputElement | null
+//                                                  (Batch D — appends one more
+//                                                  roster name input, up to 8;
+//                                                  the first two ship static in
+//                                                  index.html)
 //
 // This module only paints DOM. It never reads the network, never touches
 // storage, and never imports siblings — app.js owns the Session and wires the
@@ -527,6 +543,13 @@ export function renderResults(result, seed, extras) {
   const screen = document.getElementById('screen-results');
   showScreen('screen-results');
 
+  // Batch D — #reveal-answers-btn/#answer-review are reused by the
+  // leaderboard (D3); only one live copy of each id may exist in the DOM at
+  // once (plain id uniqueness, and #reveal-answers-btn's aria-controls needs
+  // an unambiguous target), so strip any copy left behind in the OTHER
+  // screen before this one paints its own.
+  clearForeignAnswerReview('screen-results');
+
   let root = document.getElementById('results');
   if (!root) {
     root = el('div', { attrs: { id: 'results' } });
@@ -545,6 +568,11 @@ export function renderResults(result, seed, extras) {
   const reviewPaper = hasExtras && Array.isArray(extras.paper) ? extras.paper : null;
   const reviewAnswers = hasExtras ? extras.answers : undefined; // may be null (D) or absent (no extras)
   const bankVersion = hasExtras && extras.bankVersion != null ? extras.bankVersion : null;
+  // Batch D — mid-party interim card: whose card this is, and the single
+  // "Pass to <nextName>" action that replaces the static rematch/same-seed
+  // row (app.js hides that row itself for this render).
+  const partyPlayerName = hasExtras && extras.partyPlayerName != null ? String(extras.partyPlayerName) : null;
+  const partyPass = hasExtras && extras.partyPass && extras.partyPass.nextName != null ? extras.partyPass : null;
 
   const revealNodes = [];
 
@@ -557,6 +585,13 @@ export function renderResults(result, seed, extras) {
   // replaces the old separate "Comparison field" jargon block entirely.
   const scorePanel = el('div', { class: 'results-layout__score' });
   const scoreCard = el('div', { class: 'score-card' });
+
+  // Batch D — a passed-around phone always shows whose card is on screen.
+  if (partyPlayerName) {
+    scoreCard.appendChild(
+      el('p', { class: 'score-card__player eyebrow', text: partyPlayerName })
+    );
+  }
 
   const meta = el('p', { class: 'score-card__meta mono' });
   meta.appendChild(
@@ -716,9 +751,239 @@ export function renderResults(result, seed, extras) {
   root.appendChild(share);
   revealNodes.push(share);
 
+  /* ---- D2 — mid-party "Pass to <next name>" action (in place of the static
+     rematch/same-seed row, which app.js hides for this render) ---- */
+  if (partyPass) {
+    const passWrap = el('div', { class: 'results-actions party-pass-actions' });
+    passWrap.appendChild(
+      el('button', {
+        class: 'btn btn--primary',
+        text: 'Pass to ' + String(partyPass.nextName),
+        attrs: { id: 'pass-to-next-btn', type: 'button' },
+      })
+    );
+    root.appendChild(passWrap);
+    revealNodes.push(passWrap);
+  }
+
   if (typeof window.scrollTo === 'function') {
     window.scrollTo(0, 0);
   }
 
   revealOnScroll(revealNodes);
+}
+
+/* ------------------------------------------------------------------ *
+ * Batch D — cross-screen id de-duplication for the reused C2 answer-review
+ * pair. Only #screen-results (renderResults) and #screen-leaderboard
+ * (renderLeaderboard) ever mount #reveal-answers-btn/#answer-review; a
+ * screen switch never removes the OTHER screen's DOM (only toggles
+ * .screen--active/.screen--hidden), so without this a completed multi-player
+ * party would leave duplicate ids sitting in the document at once.
+ * ------------------------------------------------------------------ */
+function clearForeignAnswerReview(ownerScreenId) {
+  ['reveal-answers-btn', 'answer-review'].forEach(function (id) {
+    document.querySelectorAll('#' + id).forEach(function (node) {
+      const owner = node.closest ? node.closest('.screen') : null;
+      if (!owner || owner.id !== ownerScreenId) {
+        node.remove();
+      }
+    });
+  });
+}
+
+/* ================================================================== *
+ * Batch D — pass-the-phone party mode
+ * ================================================================== */
+
+/* ------------------------------------------------------------------ *
+ * addPartyRosterRow(index) — appends one more roster name input (index is
+ * 0-based; the first two rows ship static in index.html). Returns the new
+ * <input> (so app.js can focus it) or null if the roster list is missing.
+ * ------------------------------------------------------------------ */
+export function addPartyRosterRow(index) {
+  const list = document.getElementById('party-roster-list');
+  if (!list) return null;
+
+  const inputId = 'party-player-' + index;
+  const row = el('div', { class: 'party-roster__row' });
+  const label = el('label', {
+    class: 'party-roster__label',
+    text: 'Player ' + (index + 1),
+    attrs: { for: inputId },
+  });
+  const input = el('input', {
+    class: 'party-roster__input',
+    attrs: {
+      type: 'text',
+      id: inputId,
+      name: inputId,
+      autocomplete: 'off',
+      spellcheck: 'false',
+      placeholder: 'Name',
+    },
+  });
+
+  row.appendChild(label);
+  row.appendChild(input);
+  list.appendChild(row);
+  return input;
+}
+
+/* ================================================================== *
+ * renderInterstitial(name, meta) — D2's "Hand the phone to <name>" screen.
+ * meta = { index, total } is OPTIONAL and purely informational ("Player 2 of
+ * 3"); the caller (app.js) never needs to read it back.
+ * ================================================================== */
+export function renderInterstitial(name, meta) {
+  const screen = document.getElementById('screen-interstitial');
+  showScreen('screen-interstitial');
+  if (!screen) return;
+
+  const safeName = name != null ? String(name) : 'the next player';
+
+  const titleEl = document.getElementById('screen-interstitial-title');
+  if (titleEl) titleEl.textContent = 'Hand the phone to ' + safeName;
+
+  const leadEl = document.getElementById('interstitial-lead');
+  if (leadEl) {
+    leadEl.textContent = 'Everyone else look away — no peeking at ' + safeName + '’s screen.';
+  }
+
+  const head = screen.querySelector('.screen__head');
+  let metaEl = document.getElementById('interstitial-meta');
+  if (meta && Number.isInteger(meta.index) && Number.isInteger(meta.total)) {
+    if (!metaEl && head) {
+      metaEl = el('p', { class: 'interstitial-meta mono', attrs: { id: 'interstitial-meta' } });
+      head.appendChild(metaEl);
+    }
+    if (metaEl) metaEl.textContent = 'Player ' + (meta.index + 1) + ' of ' + meta.total;
+  } else if (metaEl && metaEl.parentNode) {
+    metaEl.parentNode.removeChild(metaEl);
+  }
+
+  const actions = document.getElementById('interstitial-actions');
+  if (actions) {
+    actions.textContent = '';
+    actions.appendChild(
+      el('button', {
+        class: 'btn btn--primary interstitial-actions__start',
+        text: "I'm " + safeName + ' — start',
+        attrs: { id: 'interstitial-start-btn', type: 'button' },
+      })
+    );
+  }
+
+  if (typeof window.scrollTo === 'function') {
+    window.scrollTo(0, 0);
+  }
+}
+
+/* ================================================================== *
+ * renderLeaderboard(players, results, extras) — D3's ranked leaderboard,
+ * sorted score desc, then elapsed asc, then roster order (stable tie-break),
+ * winner row visually promoted. Reuses C2's answer-review builder with
+ * `answers = null` (correct-answer column only — per-player answer sheets
+ * are out of scope for the leaderboard view, per D3).
+ * extras = { paper, bankVersion } — both optional; without `paper` no answer
+ * review section is mounted.
+ * ================================================================== */
+function rankPartyRows(players, results) {
+  const list = Array.isArray(players) ? players : [];
+  const res = Array.isArray(results) ? results : [];
+  const rows = list.map(function (name, i) {
+    const r = res[i] && typeof res[i] === 'object' ? res[i] : null;
+    return {
+      index: i,
+      name: name != null ? String(name) : 'Player ' + (i + 1),
+      total: r && Number.isFinite(Number(r.total)) ? Number(r.total) : 0,
+      maxTotal: r && Number.isFinite(Number(r.maxTotal)) ? Number(r.maxTotal) : 20,
+      elapsedMs: r && Number.isFinite(Number(r.elapsedMs)) ? Number(r.elapsedMs) : 0,
+    };
+  });
+  rows.sort(function (a, b) {
+    if (b.total !== a.total) return b.total - a.total;
+    if (a.elapsedMs !== b.elapsedMs) return a.elapsedMs - b.elapsedMs;
+    return a.index - b.index; // stable roster-order tie-break
+  });
+  return rows;
+}
+
+export function renderLeaderboard(players, results, extras) {
+  const screen = document.getElementById('screen-leaderboard');
+  showScreen('screen-leaderboard');
+  if (!screen) return;
+
+  // See the note above clearForeignAnswerReview's definition — strip any
+  // #reveal-answers-btn/#answer-review left over in #screen-results before
+  // this screen mounts its own.
+  clearForeignAnswerReview('screen-leaderboard');
+
+  let body = document.getElementById('leaderboard-body');
+  if (!body) {
+    body = el('div', { attrs: { id: 'leaderboard-body' } });
+    screen.appendChild(body);
+  }
+  body.textContent = '';
+
+  const rows = rankPartyRows(players, results);
+
+  const list = el('div', {
+    class: 'leaderboard',
+    attrs: { role: 'list', 'aria-label': 'Leaderboard, ranked by score then time' },
+  });
+
+  rows.forEach(function (row, rank) {
+    const isWinner = rank === 0;
+    const item = el('div', {
+      class: 'leaderboard__row' + (isWinner ? ' leaderboard__row--winner' : ''),
+      attrs: { role: 'listitem' },
+    });
+
+    item.appendChild(el('span', { class: 'leaderboard__rank mono', text: '#' + (rank + 1) }));
+
+    const nameWrap = el('span', { class: 'leaderboard__name' });
+    nameWrap.appendChild(el('span', { class: 'leaderboard__name-text', text: row.name }));
+    if (isWinner) {
+      nameWrap.appendChild(el('span', { class: 'leaderboard__crown', text: 'Winner' }));
+    }
+    item.appendChild(nameWrap);
+
+    item.appendChild(
+      el('span', { class: 'leaderboard__score mono', text: row.total + ' / ' + row.maxTotal })
+    );
+    item.appendChild(
+      el('span', { class: 'leaderboard__time mono', text: formatElapsed(row.elapsedMs) })
+    );
+
+    list.appendChild(item);
+  });
+
+  body.appendChild(list);
+
+  const hasExtras = extras && typeof extras === 'object';
+  const reviewPaper = hasExtras && Array.isArray(extras.paper) ? extras.paper : null;
+  const reviewSection = buildAnswerReview(reviewPaper, null);
+  if (reviewSection) body.appendChild(reviewSection);
+
+  const actions = el('div', { class: 'results-actions leaderboard-actions' });
+  actions.appendChild(
+    el('button', {
+      class: 'btn btn--primary',
+      text: 'Rematch: new seed',
+      attrs: { id: 'leaderboard-rematch-btn', type: 'button' },
+    })
+  );
+  actions.appendChild(
+    el('button', {
+      class: 'btn btn--ghost',
+      text: 'Done',
+      attrs: { id: 'leaderboard-done-btn', type: 'button' },
+    })
+  );
+  body.appendChild(actions);
+
+  if (typeof window.scrollTo === 'function') {
+    window.scrollTo(0, 0);
+  }
 }

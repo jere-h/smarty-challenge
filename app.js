@@ -11,7 +11,10 @@
 import { parseSeed } from './validation.js';
 import { generatePaper } from './sampler.js';
 import { mark } from './marker.js';
-import { renderSeedScreen, renderQuiz, renderResults } from './render.js';
+import {
+  renderSeedScreen, renderQuiz, renderResults,
+  renderInterstitial, renderLeaderboard, addPartyRosterRow,
+} from './render.js';
 import { buildSummary, shareWhatsApp, shareTelegram, copyToClipboard } from './share.js';
 import { loadState, saveState, clearSession } from './storage.js';
 
@@ -210,6 +213,96 @@ function handleSpinSeed() {
 }
 
 // ---------------------------------------------------------------------------
+// D1 — party roster (seed screen). No roster (toggle left unchecked) means
+// handleStart's existing solo branch runs completely untouched (Section 5
+// acceptance: "solo flow must stay byte-identical when the toggle is
+// untouched").
+// ---------------------------------------------------------------------------
+
+const PARTY_MIN_PLAYERS = 2;
+const PARTY_MAX_PLAYERS = 8;
+
+function isPartyToggleOn() {
+  const toggle = document.getElementById('party-toggle');
+  return !!(toggle && toggle.checked);
+}
+
+function getRosterInputs() {
+  const list = document.getElementById('party-roster-list');
+  if (!list) return [];
+  return Array.prototype.slice.call(list.querySelectorAll('.party-roster__input'));
+}
+
+function setRosterError(msg) {
+  const el = document.getElementById('party-roster-error');
+  if (el) el.textContent = msg || '';
+}
+
+// Toggling #party-toggle shows/hides #party-roster; unchecking clears any
+// stale validation message left over from a previous attempt.
+function updatePartyRosterVisibility() {
+  const roster = document.getElementById('party-roster');
+  const on = isPartyToggleOn();
+  if (roster) roster.hidden = !on;
+  setRosterError('');
+}
+
+// Live "rejects duplicates inline" feedback while typing — authoritative
+// validation (blank trimming, the 2..8 count, and the same duplicate check)
+// happens again in collectRosterNames() when Start is actually pressed.
+function checkRosterLiveDuplicates() {
+  const inputs = getRosterInputs();
+  const seenLower = new Set();
+  let dupe = null;
+  for (const input of inputs) {
+    const raw = (input.value || '').trim();
+    if (raw === '') continue;
+    const lower = raw.toLowerCase();
+    if (seenLower.has(lower)) { dupe = raw; break; }
+    seenLower.add(lower);
+  }
+  setRosterError(dupe ? 'Duplicate name: "' + dupe + '" — names must be unique.' : '');
+}
+
+// #add-player-btn — appends one more roster name input, up to 8 total (D1).
+function handleAddPlayer() {
+  const count = getRosterInputs().length;
+  if (count >= PARTY_MAX_PLAYERS) {
+    setRosterError('Up to ' + PARTY_MAX_PLAYERS + ' players.');
+    return;
+  }
+  const input = addPartyRosterRow(count);
+  setRosterError('');
+  if (input) input.focus();
+}
+
+// Trims blanks, rejects duplicate names (case-insensitive), and requires
+// 2..8 valid names before a party can start (D1). Returns { names } or
+// { error }.
+function collectRosterNames() {
+  const inputs = getRosterInputs();
+  const names = [];
+  const seenLower = new Set();
+  for (const input of inputs) {
+    const raw = (input.value || '').trim();
+    if (raw === '') continue; // trims blanks
+    const lower = raw.toLowerCase();
+    if (seenLower.has(lower)) {
+      return { error: 'Duplicate name: "' + raw + '" — names must be unique.' };
+    }
+    seenLower.add(lower);
+    names.push(raw);
+  }
+  if (names.length < PARTY_MIN_PLAYERS) {
+    return { error: 'Add at least ' + PARTY_MIN_PLAYERS + ' player names to start a party.' };
+  }
+  if (names.length > PARTY_MAX_PLAYERS) {
+    return { error: 'Up to ' + PARTY_MAX_PLAYERS + ' players.' };
+  }
+  return { names };
+}
+
+// ---------------------------------------------------------------------------
 // B1 — sticky quiz header: live "answered N/20" + "MM:SS" timer.
 // ---------------------------------------------------------------------------
 
@@ -311,6 +404,19 @@ function handleStart() {
   }
   setSeedError('');
 
+  // D1 — party toggle branch. Toggle left unchecked (the default) falls
+  // straight through to the existing solo path below, completely unchanged.
+  if (isPartyToggleOn()) {
+    const rosterResult = collectRosterNames();
+    if ('error' in rosterResult) {
+      setRosterError(rosterResult.error);
+      return;
+    }
+    setRosterError('');
+    startParty(parsed.seed, rosterResult.names);
+    return;
+  }
+
   let paper;
   try {
     paper = buildPaperForSeed(parsed.seed);
@@ -340,6 +446,112 @@ function handleStart() {
   showScreen('screen-quiz');
   updateProgressDisplay();
   startQuizTimer(); // B1 — started when the quiz screen shows
+}
+
+// ---------------------------------------------------------------------------
+// D2/D4 — party mode: ONE paper built once from the seed, then each player
+// takes a turn (interstitial -> fresh quiz -> personal result -> next
+// interstitial), ending in the D3 leaderboard.
+// ---------------------------------------------------------------------------
+
+// Builds a fresh party (used by both the seed-screen Start button and the
+// leaderboard's "Rematch: new seed") — one paper, roster order preserved,
+// every result slot starts null, `startedAt` null (D2: it is set only the
+// first time a player actually enters the quiz via #interstitial-start-btn).
+function startParty(seedNum, players) {
+  let paper;
+  try {
+    paper = buildPaperForSeed(seedNum);
+  } catch (err) {
+    setSeedError('Could not build a paper from this bank: ' + (err && err.message ? err.message : String(err)));
+    return;
+  }
+
+  session = {
+    seed: seedNum,
+    paper,
+    answers: Object.create(null),
+    startedAt: null,
+    party: {
+      players: players.slice(),
+      current: 0,
+      results: players.map(() => null),
+    },
+  };
+  lastResult = null;
+  resultsShown = false;
+
+  persisted.session = {
+    seed: seedNum,
+    startedAt: null,
+    answers: {},
+    party: {
+      players: players.slice(),
+      current: 0,
+      results: players.map(() => null),
+    },
+  };
+  persistNow();
+
+  hideResumeNotice();
+  resetSubmitGuard();
+  showPlayerInterstitial();
+}
+
+// Paints the CURRENT player's "Hand the phone to <name>" screen. B1 — the
+// quiz timer is cleared on interstitial entry, same as submit/restart.
+function showPlayerInterstitial() {
+  if (!session || !session.party) return;
+  stopQuizTimer();
+  const idx = session.party.current;
+  const name = session.party.players[idx];
+  renderInterstitial(name, { index: idx, total: session.party.players.length });
+  showScreen('screen-interstitial');
+}
+
+// #interstitial-start-btn — begins (or resumes) the current player's turn.
+//   - Fresh turn (session.startedAt is null: first entry after party
+//     creation, or after advancing past a previous player): starts that
+//     player's clock now and renders a blank quiz (D2 — "renders FRESH").
+//   - Resumed turn (session.startedAt already set: a reload happened while
+//     this same player was mid-quiz): the clock is reused as-is and their
+//     autosaved answers are restored into the form (D4).
+function handleInterstitialStart() {
+  if (!session || !session.party) return;
+
+  const isFreshTurn = session.startedAt == null;
+
+  if (isFreshTurn) {
+    session.answers = Object.create(null);
+    session.startedAt = Date.now();
+    if (persisted.session) {
+      persisted.session.startedAt = session.startedAt;
+      persisted.session.answers = {};
+    }
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+    persistNow(); // state transition, not a keystroke — not debounced
+  }
+
+  lastResult = null;
+  resultsShown = false;
+  resetSubmitGuard();
+  hideResumeNotice();
+
+  renderQuiz(session.paper, session.seed, getBankVersion());
+  if (!isFreshTurn) {
+    restoreAnswersIntoForm(session.paper, session.answers);
+  }
+  showScreen('screen-quiz');
+  updateProgressDisplay();
+  startQuizTimer(); // B1 — keeps a resumed player's clock running, or starts a fresh one
+}
+
+// #pass-to-next-btn — leaves the just-finished player's personal result card
+// for the next player's interstitial. party.current was already advanced in
+// finalizePartyTurn(), so this just repaints whichever player is now current.
+function handlePassToNext() {
+  if (!session || !session.party) return;
+  showPlayerInterstitial();
 }
 
 // C3 — shared teardown for both results actions: clears the autosaved
@@ -471,6 +683,14 @@ function finalizeSubmit(answers) {
 
   lastResult = mark(session.paper, answers, elapsedMs);
 
+  // D2 — a party in progress takes a completely separate path (per-player
+  // result storage, turn advance/leaderboard); the solo path below this is
+  // untouched so `session.party === null` behaves exactly as before Batch D.
+  if (session.party) {
+    finalizePartyTurn(elapsedMs);
+    return;
+  }
+
   // A2 — fill lastGame, append to history (cap 50), clear the in-progress session.
   const cleanAnswers = {};
   for (const k of Object.keys(answers)) {
@@ -504,8 +724,144 @@ function finalizeSubmit(answers) {
     answers: session.answers,
     bankVersion: getBankVersion(),
   });
+  setResultsActionsVisible(true); // D — solo results always show rematch/same-seed
   showScreen('screen-results');
   updateShareOnlineState(); // C4 — reconcile messenger buttons against current connectivity
+}
+
+// ---------------------------------------------------------------------------
+// D2/D3/D4 — party turn completion, personal result card, and leaderboard.
+// ---------------------------------------------------------------------------
+
+// Shows/hides the static rematch/same-seed row (#results-actions) — visible
+// for the normal solo results screen, hidden for a mid-party personal result
+// card (which instead gets render.js's own "Pass to <next>" action).
+function setResultsActionsVisible(visible) {
+  const el = document.getElementById('results-actions');
+  if (el) el.hidden = !visible;
+}
+
+// Called from finalizeSubmit() once a party's current player has submitted.
+// Stores that player's result, appends the shared history (named this time),
+// and either advances to the next player's personal-result-with-pass-button
+// card, or — on the LAST player — finalizes the whole party straight to the
+// D3 leaderboard.
+function finalizePartyTurn(elapsedMs) {
+  const party = session.party;
+  const idx = party.current;
+  const name = party.players[idx];
+
+  const cleanAnswers = {};
+  for (const k of Object.keys(session.answers)) {
+    const v = session.answers[k];
+    if (v !== null && v !== undefined && v !== '') cleanAnswers[k] = v;
+  }
+
+  party.results[idx] = {
+    total: lastResult.total,
+    maxTotal: lastResult.maxTotal,
+    elapsedMs,
+    answers: cleanAnswers,
+  };
+
+  persisted.history = Array.isArray(persisted.history) ? persisted.history : [];
+  persisted.history.unshift({
+    seed: session.seed,
+    total: lastResult.total,
+    maxTotal: lastResult.maxTotal,
+    elapsedMs,
+    finishedAt: session.submittedAt,
+    player: name,
+  });
+  if (persisted.history.length > 50) persisted.history.length = 50;
+
+  if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+
+  const isLastPlayer = idx >= party.players.length - 1;
+
+  if (isLastPlayer) {
+    // D4 — a finished party moves to lastGame.party (session cleared), and
+    // restores straight to the leaderboard on a future reload.
+    persisted.lastGame = {
+      finishedAt: session.submittedAt,
+      seed: session.seed,
+      solo: null,
+      party: {
+        players: party.players.slice(),
+        current: party.players.length,
+        results: party.results.slice(),
+      },
+    };
+    persisted.session = null;
+    persistNow();
+
+    hideResumeNotice();
+    resetSubmitGuard();
+    showLeaderboard(party.players, party.results, session.paper);
+    return;
+  }
+
+  // D2 — advance to the next player: the clock is nulled (only set again
+  // when that player actually taps #interstitial-start-btn), and their
+  // answers slate starts blank.
+  party.current = idx + 1;
+  session.startedAt = null;
+  session.answers = Object.create(null);
+
+  if (persisted.session) {
+    persisted.session.party = {
+      players: party.players.slice(),
+      current: party.current,
+      results: party.results.slice(),
+    };
+    persisted.session.startedAt = null;
+    persisted.session.answers = {};
+  }
+  persistNow();
+
+  hideResumeNotice();
+  resetSubmitGuard();
+  showPartyPersonalResult(name, lastResult, party.players[party.current]);
+}
+
+// The just-finished player's personal result card: same renderResults()
+// C1 score card, but WITHOUT the C2 answer-review section (spoilers — D2)
+// and with a single "Pass to <next name>" action in place of rematch/same-seed.
+function showPartyPersonalResult(name, result, nextName) {
+  renderResults(result, session.seed, {
+    bankVersion: getBankVersion(),
+    partyPlayerName: name,
+    partyPass: { nextName },
+  });
+  setResultsActionsVisible(false);
+  showScreen('screen-results');
+  updateShareOnlineState(); // C4 — reconcile messenger buttons against current connectivity
+}
+
+// D3 — the ranked leaderboard, once every player has played. B1 — the quiz
+// timer is cleared on leaderboard entry, same as submit/interstitial.
+function showLeaderboard(players, results, paper) {
+  stopQuizTimer();
+  resetSubmitGuard();
+  renderLeaderboard(players, results, { paper, bankVersion: getBankVersion() });
+  showScreen('screen-leaderboard');
+}
+
+// #leaderboard-rematch-btn — same roster, a freshly spun seed, back to the
+// interstitial flow (D3).
+function handleLeaderboardRematch() {
+  if (!session || !session.party || !Array.isArray(session.party.players)) return;
+  const players = session.party.players.slice();
+  const MIN_SEED = 100;
+  const MAX_SEED = 99999;
+  const newSeed = MIN_SEED + Math.floor(Math.random() * (MAX_SEED - MIN_SEED + 1));
+  startParty(newSeed, players);
+}
+
+// #leaderboard-done-btn — "clears party + session, seed screen" (D3): the
+// same teardown C3 already gives the solo results actions.
+function handleLeaderboardDone() {
+  goToSeedScreenFromResults();
 }
 
 // ---------------------------------------------------------------------------
@@ -573,10 +929,9 @@ function restoreAnswersIntoForm(paper, answers) {
 function tryRestoreSession(sessionData) {
   if (!sessionData || typeof sessionData !== 'object') return false;
 
-  // Batch D extends this branch to restore to the current player's
-  // interstitial instead; Batch A never writes a non-null party, so this is
-  // effectively unreachable today, but guarded defensively.
-  if (sessionData.party) return false;
+  // D4 — a party session ALWAYS restores to the current player's
+  // interstitial, never directly into the quiz.
+  if (sessionData.party) return tryRestorePartySession(sessionData);
 
   let paper;
   try {
@@ -609,11 +964,61 @@ function tryRestoreSession(sessionData) {
   return true;
 }
 
+// D4 — a party session ALWAYS lands on the current player's interstitial
+// (never directly in the quiz); tapping #interstitial-start-btn afterward is
+// what actually restores that player's autosaved answers and non-null
+// startedAt (handleInterstitialStart's "resumed turn" branch).
+function tryRestorePartySession(sessionData) {
+  const party = sessionData.party;
+  if (!party || !Array.isArray(party.players) || party.players.length < PARTY_MIN_PLAYERS) return false;
+
+  const idx = Number(party.current);
+  if (!Number.isInteger(idx) || idx < 0 || idx >= party.players.length) return false;
+
+  let paper;
+  try {
+    paper = buildPaperForSeed(sessionData.seed);
+  } catch (_err) {
+    return false; // regeneration failure -> drop (Restore-failure rule)
+  }
+
+  const answers = sessionData.answers && typeof sessionData.answers === 'object'
+    ? sessionData.answers
+    : {};
+  if (!answersMatchPaper(answers, paper)) return false; // stale-bank mismatch -> drop
+
+  const results = Array.isArray(party.results) ? party.results.slice(0, party.players.length) : [];
+  while (results.length < party.players.length) results.push(null);
+
+  session = {
+    seed: sessionData.seed,
+    paper,
+    answers: { ...answers },
+    startedAt: typeof sessionData.startedAt === 'number' ? sessionData.startedAt : null,
+    party: {
+      players: party.players.slice(),
+      current: idx,
+      results,
+    },
+  };
+  lastResult = null;
+  resultsShown = false;
+  resetSubmitGuard();
+  hideResumeNotice();
+
+  showPlayerInterstitial();
+  return true;
+}
+
 // Attempt to restore the most recently completed paper's results screen.
 // Returns true on success.
 function tryRestoreLastGame(lastGame) {
   if (!lastGame || typeof lastGame !== 'object') return false;
-  if (!lastGame.solo) return false; // party lastGame is Batch D scope
+
+  // D4 — a finished party restores straight to the leaderboard.
+  if (lastGame.party) return tryRestorePartyLastGame(lastGame);
+
+  if (!lastGame.solo) return false;
 
   let paper;
   try {
@@ -647,8 +1052,51 @@ function tryRestoreLastGame(lastGame) {
     answers,
     bankVersion: getBankVersion(),
   });
+  setResultsActionsVisible(true); // D — solo results always show rematch/same-seed
   showScreen('screen-results');
   updateShareOnlineState(); // C4 — reconcile messenger buttons against current connectivity
+  return true;
+}
+
+// D4 — a finished party's lastGame restores straight to the leaderboard
+// (never the quiz/interstitial — the party is already over).
+function tryRestorePartyLastGame(lastGame) {
+  const party = lastGame.party;
+  if (!party || !Array.isArray(party.players) || !Array.isArray(party.results)) return false;
+  if (party.players.length < PARTY_MIN_PLAYERS) return false;
+
+  let paper;
+  try {
+    paper = buildPaperForSeed(lastGame.seed);
+  } catch (_err) {
+    return false;
+  }
+
+  // Same Restore-failure rule as the solo path: every stored result's
+  // answers must resolve against the regenerated paper.
+  for (const r of party.results) {
+    if (r && r.answers && !answersMatchPaper(r.answers, paper)) return false;
+  }
+
+  session = {
+    seed: lastGame.seed,
+    paper,
+    answers: {},
+    startedAt: null,
+    submittedAt: lastGame.finishedAt,
+    party: {
+      players: party.players.slice(),
+      current: party.players.length,
+      results: party.results.slice(),
+    },
+  };
+  lastResult = null;
+  resultsShown = true;
+  stopQuizTimer(); // B1 — defensive; no timer should be running at boot
+  resetSubmitGuard();
+  hideResumeNotice();
+
+  showLeaderboard(party.players, party.results, paper);
   return true;
 }
 
@@ -668,12 +1116,11 @@ function attemptRestore() {
     if (withinWindow) {
       const restored = tryRestoreLastGame(persisted.lastGame);
       if (restored) return;
-      // Only a bank mismatch drops it; simply being outside the window (or a
-      // party lastGame in this batch) leaves it stored and boots to seed.
-      if (persisted.lastGame.solo) {
-        persisted.lastGame = null;
-        persistNow();
-      }
+      // Only a bank mismatch drops it (Restore-failure rule, applied
+      // uniformly to solo and D4 party payloads); simply being outside the
+      // window leaves it stored and boots to seed.
+      persisted.lastGame = null;
+      persistNow();
     }
   }
 }
@@ -877,6 +1324,31 @@ function wireEvents() {
       hideResumeNotice();
       return;
     }
+    if (target.closest('#add-player-btn')) {
+      event.preventDefault();
+      handleAddPlayer();
+      return;
+    }
+    if (target.closest('#interstitial-start-btn')) {
+      event.preventDefault();
+      handleInterstitialStart();
+      return;
+    }
+    if (target.closest('#pass-to-next-btn')) {
+      event.preventDefault();
+      handlePassToNext();
+      return;
+    }
+    if (target.closest('#leaderboard-rematch-btn')) {
+      event.preventDefault();
+      handleLeaderboardRematch();
+      return;
+    }
+    if (target.closest('#leaderboard-done-btn')) {
+      event.preventDefault();
+      handleLeaderboardDone();
+      return;
+    }
     const shareBtn = target.closest('#share-whatsapp, #share-telegram, #copy-summary');
     if (shareBtn) {
       event.preventDefault();
@@ -901,6 +1373,13 @@ function wireEvents() {
   // change on a text field, which fires on blur).
   document.addEventListener('change', (event) => {
     const el = event.target;
+
+    // D1 — #party-toggle shows/hides #party-roster.
+    if (el && el.id === 'party-toggle') {
+      updatePartyRosterVisibility();
+      return;
+    }
+
     if (!el || !el.name || el.name.indexOf('q-') !== 0) return;
 
     if (el.classList && el.classList.contains('option__input')) {
@@ -919,6 +1398,13 @@ function wireEvents() {
   // keystrokes so a dropped session never loses more than ~500ms of typing.
   document.addEventListener('input', (event) => {
     const el = event.target;
+
+    // D1 — live "rejects duplicates inline" feedback while typing a roster name.
+    if (el && el.classList && el.classList.contains('party-roster__input')) {
+      checkRosterLiveDuplicates();
+      return;
+    }
+
     if (!el || !el.name || el.name.indexOf('q-') !== 0) return;
     autosaveTick();
   });

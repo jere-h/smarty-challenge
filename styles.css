@@ -1040,3 +1040,240 @@ button {
     transform: none;
   }
 }
+
+/* ============================================================= Batch D —
+   Pass-the-phone party mode: roster (D1), interstitial + per-player result
+   (D2), leaderboard (D3). Every color here comes from the shared tokens
+   already flipped by the :root / prefers-color-scheme:dark blocks at the top
+   of this file, so light and dark both fall out of the same rules with no
+   extra dark-mode block needed. */
+
+/* D1 — seed-screen roster */
+.party-mode {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.party-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  padding: var(--space-2) 0;
+  cursor: pointer;
+}
+
+.party-toggle__input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+.party-toggle__label {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.party-roster {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-sand);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.party-roster[hidden] {
+  display: none;
+}
+
+.party-roster__hint {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.party-roster__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.party-roster__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.party-roster__label {
+  flex: none;
+  width: 6.5ch;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.party-roster__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-fg);
+  font-size: 1rem;
+}
+
+.party-roster__input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(232, 85, 127, 0.18);
+}
+
+.party-roster__add {
+  align-self: flex-start;
+}
+
+.party-roster__error {
+  color: var(--color-accent);
+  font-size: 0.9rem;
+  font-weight: 550;
+  min-height: 1.2em;
+}
+
+.party-roster__error:empty {
+  min-height: 0;
+}
+
+/* D2 — "Hand the phone to <name>" interstitial. Reuses .screen__head /
+   .screen__lead for the title + lead line; only the meta line and the
+   start-button wrapper are new here. */
+.interstitial-meta {
+  color: var(--color-muted);
+  font-size: 0.95rem;
+}
+
+.interstitial-actions {
+  display: flex;
+}
+
+.interstitial-actions__start {
+  align-self: flex-start;
+}
+
+/* D2 — mid-party personal result card: player-name banner above the score
+   card's seed/bank line, and the single "Pass to <next>" action row that
+   replaces the static rematch/same-seed row (app.js hides that row itself). */
+.score-card__player {
+  color: var(--color-accent);
+}
+
+.party-pass-actions {
+  display: flex;
+}
+
+/* Batch D — the static rematch/same-seed row is hidden (via the `hidden`
+   attribute) during a mid-party personal result card; same override
+   reasoning as .resume-notice[hidden] / #submit-btn[hidden] above (the
+   author `display: flex` rule would otherwise beat the UA default). */
+.results-actions[hidden] {
+  display: none;
+}
+
+/* D3 — leaderboard */
+.leaderboard {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.leaderboard__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.leaderboard__row:last-child {
+  border-bottom: none;
+}
+
+.leaderboard__row--winner {
+  border-radius: var(--radius);
+  border-bottom-color: transparent;
+  background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+}
+
+.leaderboard__rank {
+  flex: none;
+  width: 3ch;
+  color: var(--color-muted);
+  font-size: 1rem;
+}
+
+.leaderboard__row--winner .leaderboard__rank {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.leaderboard__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 1rem;
+  font-weight: 550;
+}
+
+.leaderboard__name-text {
+  overflow-wrap: anywhere;
+}
+
+.leaderboard__crown {
+  flex: none;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+.leaderboard__score,
+.leaderboard__time {
+  flex: none;
+  font-size: 0.98rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.leaderboard__row--winner .leaderboard__score {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+/* D3 — the answer review + leaderboard actions live inside #leaderboard-body,
+   stacked with the same rhythm as #results. */
+#leaderboard-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-top: var(--space-5);
+}
+
+.leaderboard-actions {
+  display: flex;
+}
