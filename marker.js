@@ -18,9 +18,9 @@
 
 import { checkAnswer } from './checkRules.js';
 
-// The paper is always exactly 20 questions per the sampler contract; maxTotal is
-// pinned so the results screen and share summary agree even on a short paper.
-const MAX_TOTAL = 20;
+// Papers come in the player-chosen lengths (5/10/20), so maxTotal is simply
+// the number of questions in the marked paper — the results screen and share
+// summary always agree with what was actually sat.
 
 // Pull the answer a player gave for a question out of the answers map without
 // assuming any particular key is present. Missing, null, or whitespace-only
@@ -85,7 +85,7 @@ export function mark(paper, answers, elapsedMs) {
 
   return {
     total,
-    maxTotal: MAX_TOTAL,
+    maxTotal: questions.length,
     perTopic,
     perQuestion,
     elapsedMs: safeElapsed,

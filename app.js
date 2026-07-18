@@ -164,10 +164,21 @@ function buildTopicBuckets(theBank, target) {
 
 // Build the SAME paper a fresh Start would (reused by handleStart, session
 // resume, and results-restore) — no duplicated sampling logic (A2).
-function buildPaperForSeed(seedNum) {
+const VALID_PAPER_SIZES = [5, 10, 20];
+
+function buildPaperForSeed(seedNum, size) {
   if (!bank) throw new Error('Question bank not loaded.');
-  const buckets = buildTopicBuckets(bank, PAPER_SIZE);
+  const target = VALID_PAPER_SIZES.includes(size) ? size : PAPER_SIZE;
+  const buckets = buildTopicBuckets(bank, target);
   return generatePaper(seedNum, bank, buckets);
+}
+
+// The seed screen's 5/10/20 exam-length picker. Falls back to the classic 20
+// if the control is missing or holds an unexpected value.
+function readPaperLength() {
+  const checked = document.querySelector('input[name="paper-length"]:checked');
+  const v = checked ? Number(checked.value) : PAPER_SIZE;
+  return VALID_PAPER_SIZES.includes(v) ? v : PAPER_SIZE;
 }
 
 // ---------------------------------------------------------------------------
@@ -219,8 +230,8 @@ function showResumeNotice() {
 function handleSpinSeed() {
   const input = document.getElementById('seed-input');
   if (!input) return;
-  const MIN_SEED = 100;
-  const MAX_SEED = 99999;
+  const MIN_SEED = 1000;
+  const MAX_SEED = 9999;
   const spun = MIN_SEED + Math.floor(Math.random() * (MAX_SEED - MIN_SEED + 1));
   input.value = String(spun);
   setSeedError('');
@@ -477,13 +488,13 @@ function handleStart() {
       return;
     }
     setRosterError('');
-    startParty(parsed.seed, rosterResult.names);
+    startParty(parsed.seed, rosterResult.names, readPaperLength());
     return;
   }
 
   let paper;
   try {
-    paper = buildPaperForSeed(parsed.seed);
+    paper = buildPaperForSeed(parsed.seed, readPaperLength());
   } catch (err) {
     setSeedError('Could not build a paper from this bank: ' + (err && err.message ? err.message : String(err)));
     return;
@@ -501,7 +512,7 @@ function handleStart() {
 
   // A2 — write the fresh in-progress paper to the autosave slot immediately
   // (not debounced: this is a state transition, not a keystroke).
-  persisted.session = { seed: parsed.seed, startedAt, answers: {}, party: null };
+  persisted.session = { seed: parsed.seed, startedAt, answers: {}, party: null, paperLen: paper.length };
   persistNow();
 
   hideResumeNotice();
@@ -522,10 +533,10 @@ function handleStart() {
 // leaderboard's "Rematch: new seed") — one paper, roster order preserved,
 // every result slot starts null, `startedAt` null (D2: it is set only the
 // first time a player actually enters the quiz via #interstitial-start-btn).
-function startParty(seedNum, players) {
+function startParty(seedNum, players, paperLen) {
   let paper;
   try {
-    paper = buildPaperForSeed(seedNum);
+    paper = buildPaperForSeed(seedNum, paperLen);
   } catch (err) {
     setSeedError('Could not build a paper from this bank: ' + (err && err.message ? err.message : String(err)));
     return;
@@ -549,6 +560,7 @@ function startParty(seedNum, players) {
     seed: seedNum,
     startedAt: null,
     answers: {},
+    paperLen: paper.length,
     party: {
       players: players.slice(),
       current: 0,
@@ -788,6 +800,7 @@ function finalizeSubmit(answers) {
     seed: session.seed,
     solo: { answers: cleanAnswers, elapsedMs },
     party: null,
+    paperLen: session.paper.length,
   };
   persisted.history = Array.isArray(persisted.history) ? persisted.history : [];
   persisted.history.unshift({
@@ -877,6 +890,7 @@ function finalizePartyTurn(elapsedMs) {
         current: party.players.length,
         results: party.results.slice(),
       },
+      paperLen: session.paper.length,
     };
     persisted.session = null;
     persistNow();
@@ -938,8 +952,8 @@ function showLeaderboard(players, results, paper) {
 function handleLeaderboardRematch() {
   if (!session || !session.party || !Array.isArray(session.party.players)) return;
   const players = session.party.players.slice();
-  const MIN_SEED = 100;
-  const MAX_SEED = 99999;
+  const MIN_SEED = 1000;
+  const MAX_SEED = 9999;
   const newSeed = MIN_SEED + Math.floor(Math.random() * (MAX_SEED - MIN_SEED + 1));
   startParty(newSeed, players);
 }
@@ -1021,7 +1035,7 @@ function tryRestoreSession(sessionData) {
 
   let paper;
   try {
-    paper = buildPaperForSeed(sessionData.seed);
+    paper = buildPaperForSeed(sessionData.seed, Number(sessionData.paperLen) || undefined);
   } catch (_err) {
     return false; // regeneration failure -> drop (Restore-failure rule)
   }
@@ -1063,7 +1077,7 @@ function tryRestorePartySession(sessionData) {
 
   let paper;
   try {
-    paper = buildPaperForSeed(sessionData.seed);
+    paper = buildPaperForSeed(sessionData.seed, Number(sessionData.paperLen) || undefined);
   } catch (_err) {
     return false; // regeneration failure -> drop (Restore-failure rule)
   }
@@ -1108,7 +1122,7 @@ function tryRestoreLastGame(lastGame) {
 
   let paper;
   try {
-    paper = buildPaperForSeed(lastGame.seed);
+    paper = buildPaperForSeed(lastGame.seed, Number(lastGame.paperLen) || undefined);
   } catch (_err) {
     return false;
   }
@@ -1153,7 +1167,7 @@ function tryRestorePartyLastGame(lastGame) {
 
   let paper;
   try {
-    paper = buildPaperForSeed(lastGame.seed);
+    paper = buildPaperForSeed(lastGame.seed, Number(lastGame.paperLen) || undefined);
   } catch (_err) {
     return false;
   }
@@ -1188,7 +1202,40 @@ function tryRestorePartyLastGame(lastGame) {
 
 // Boot-time restore, run only after a successful bank load (a bank LOAD
 // failure must leave stored state completely untouched).
+// ?game=NNNN&len=5|10|20 — a friend's shared challenge link. The game number
+// (and length) are pre-filled on the seed screen; nothing auto-starts.
+function readUrlChallenge() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const game = params.get('game');
+    const len = Number(params.get('len'));
+    return {
+      game: game && /^\d{4}$/.test(game) ? game : null,
+      len: VALID_PAPER_SIZES.includes(len) ? len : null,
+    };
+  } catch (_err) {
+    return { game: null, len: null };
+  }
+}
+
+function applyUrlChallenge(challenge) {
+  if (challenge.game) {
+    const input = document.getElementById('seed-input');
+    if (input) input.value = challenge.game;
+    setSeedError('');
+  }
+  if (challenge.len) {
+    const radio = document.querySelector('.length-pill input[value="' + challenge.len + '"]');
+    if (radio) radio.checked = true;
+  }
+}
+
 function attemptRestore() {
+  // A challenge link expresses clear intent to play THAT paper: it outranks
+  // the finished-game (results) restore, but never discards an in-progress
+  // session — unfinished work still wins.
+  const challenge = readUrlChallenge();
+
   if (persisted.session) {
     const restored = tryRestoreSession(persisted.session);
     if (restored) return;
@@ -1197,7 +1244,7 @@ function attemptRestore() {
     persistNow();
   }
 
-  if (persisted.lastGame) {
+  if (!challenge.game && persisted.lastGame) {
     const withinWindow = Date.now() - Number(persisted.lastGame.finishedAt) <= RESTORE_WINDOW_MS;
     if (withinWindow) {
       const restored = tryRestoreLastGame(persisted.lastGame);
@@ -1209,6 +1256,9 @@ function attemptRestore() {
       persistNow();
     }
   }
+
+  // Landed on the seed screen: honor a shared challenge link's prefill.
+  applyUrlChallenge(challenge);
 }
 
 // ---------------------------------------------------------------------------
@@ -1241,9 +1291,25 @@ function flashButton(btn, msg) {
   }, 1600);
 }
 
+// A link that opens this app with the current game number and paper length
+// pre-filled (see readUrlChallenge) so a friend starts the identical paper.
+function buildChallengeUrl() {
+  if (!session) return null;
+  try {
+    const u = new URL(window.location.href);
+    u.search = '';
+    u.hash = '';
+    u.searchParams.set('game', String(session.seed));
+    u.searchParams.set('len', String(session.paper.length));
+    return u.toString();
+  } catch (_err) {
+    return null;
+  }
+}
+
 function handleShareClick(btn) {
   if (!session || !lastResult) return;
-  const text = buildSummary(session.seed, lastResult, getBankVersion());
+  const text = buildSummary(session.seed, lastResult, getBankVersion(), buildChallengeUrl());
 
   if (btn.id === 'share-whatsapp') {
     shareWhatsApp(text);

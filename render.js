@@ -330,7 +330,7 @@ export function renderQuiz(paper, seed, bankVersion) {
 
   // Section eyebrow header.
   form.appendChild(
-    el('p', { class: 'eyebrow', text: 'Same number - same paper - 20 questions' })
+    el('p', { class: 'eyebrow', text: 'Same number - same paper' })
   );
 
   const blocks = [];

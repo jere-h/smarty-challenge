@@ -33,7 +33,10 @@ function buildGrid(perQuestion) {
 // no options, no answers ever enter this string. `bankVersion` is OPTIONAL
 // (defaults to 1) so a mismatched-bank device can be spotted before two
 // phones compare scores (A6) — it never carries any answer/prompt data.
-export function buildSummary(seed, result, bankVersion) {
+// `challengeUrl` is OPTIONAL: a link that opens the app with this game number
+// (and paper length) pre-filled so a friend can start the identical paper in
+// one tap. Like everything else here it carries no prompts or answers.
+export function buildSummary(seed, result, bankVersion, challengeUrl) {
   const total = result && typeof result.total === 'number' ? result.total : 0;
   const maxTotal = result && typeof result.maxTotal === 'number' ? result.maxTotal : 20;
   const elapsed = formatElapsed(result ? result.elapsedMs : 0);
@@ -49,6 +52,9 @@ export function buildSummary(seed, result, bankVersion) {
     '',
     'Same number, same paper. Beat my time.',
   ];
+  if (challengeUrl) {
+    lines.push(`Play my paper: ${challengeUrl}`);
+  }
   return lines.join('\n');
 }
 

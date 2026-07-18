@@ -66,6 +66,12 @@ export function parseSeed(raw) {
     return { error: 'The game number must be made of digits only.' };
   }
 
+  // The UI asks for a 4-digit number (the input is maxlength=4); enforce it
+  // here too so pasted or scripted input can't sneak past the field limit.
+  if (value.replace(/^\+/, '').length !== 4) {
+    return { error: 'Enter a 4-digit number (like 1234).' };
+  }
+
   // At this point the string is [+]digits. Normalize into the 32-bit key space.
   //
   // For values that fit in a safe integer we use (v >>> 0), the canonical
