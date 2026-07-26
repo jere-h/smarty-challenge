@@ -64,7 +64,7 @@ export function buildSummary(seed, result, bankVersion, challengeUrl, mode) {
 
 // buildLogicSummary(seed, result, challengeUrl) -> string
 // The Logic game's share text — built for BOTH outcomes: a finished run
-// ("All 3 stages in 12.3s") and a time's-up partial run ("Time's up —
+// ("All 3 stages in 12.3s") and a timed-out partial run ("Timed out —
 // 1/3 stages"). Spoiler-free like buildSummary: seed, stages cleared, time,
 // and a per-stage ✅/⬜ row; the hidden fruit orders never enter this
 // string. `result` is
@@ -85,10 +85,10 @@ export function buildLogicSummary(seed, result, challengeUrl) {
     `Game number ${seed}`,
     solvedAll
       ? `All ${totalStages} stages in ${seconds}s`
-      : `Time's up — ${cleared}/${totalStages} stages`,
+      : `Timed out — ${cleared}/${totalStages} stages`,
     stageRow.join(''),
     '',
-    'Same number, same hidden fruit orders. Beat me.',
+    'Same code, same challenge. 45 seconds. Beat me.',
   ];
   if (challengeUrl) {
     lines.push(`Play it: ${challengeUrl}`);
