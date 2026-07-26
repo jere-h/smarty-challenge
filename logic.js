@@ -48,7 +48,7 @@ function fruitByKey(key) {
  *   seed:number, orders:string[][], stage:number,
  *   slots:Array<string|null>,
  *   selected:null|{type:'hand',fruit:string}|{type:'slot',index:number},
- *   attempts:number, deadline:number, finished:boolean,
+ *   attempts:number, started:boolean, deadline:number, finished:boolean,
  *   onExit:(action:string, seed:number)=>void,
  * }|null}
  */
@@ -166,9 +166,48 @@ function formatCountdown(ms) {
   return (Math.max(0, ms) / 1000).toFixed(1) + 's';
 }
 
-// Full stage paint: status bar, instructions, slots, hand, actions. Called on
-// game start and on every stage advance; per-tap updates go through
-// paintBoard() so the feedback/status nodes are never rebuilt mid-flash.
+// Pre-game intro card — the rules live HERE, not on the game board, so the
+// board stays uncluttered. The 45-second clock only starts when the player
+// taps Start from this card, so reading time is never play time.
+function paintIntro() {
+  const root = bodyRoot();
+  if (!root) return;
+  root.textContent = '';
+
+  const intro = el('div', { class: 'logic-intro' });
+  intro.appendChild(el('p', { class: 'logic-intro__emoji', attrs: { 'aria-hidden': 'true' }, text: '🍓🍌🥝' }));
+  intro.appendChild(el('p', { class: 'logic-intro__title', text: 'How to play' }));
+
+  const steps = el('ul', { class: 'logic-intro__steps' });
+  [
+    'A hidden fruit order is waiting — arrange your fruits to match it.',
+    'Tap a fruit, then a box. Tap two boxes to swap them.',
+    'Press 🙌 Hands up! to check — the count of right spots flashes once, so memorize it.',
+    'Clear all 3 stages before the 45 seconds run out. Faster is better!',
+  ].forEach(function (text) {
+    steps.appendChild(el('li', { text }));
+  });
+  intro.appendChild(steps);
+
+  const actions = el('div', { class: 'logic-intro__actions' });
+  actions.appendChild(el('button', {
+    class: 'btn btn--primary',
+    attrs: { id: 'logic-intro-start-btn', type: 'button' },
+    text: "I'm ready — start the clock",
+  }));
+  actions.appendChild(el('button', {
+    class: 'btn btn--ghost',
+    attrs: { id: 'logic-intro-back-btn', type: 'button' },
+    text: 'Back',
+  }));
+  intro.appendChild(actions);
+
+  root.appendChild(intro);
+}
+
+// Full stage paint: status bar, slots, hand, actions. Called on game start
+// and on every stage advance; per-tap updates go through paintBoard() so the
+// feedback/status nodes are never rebuilt mid-flash.
 function paintStage() {
   const root = bodyRoot();
   if (!root) return;
@@ -194,15 +233,9 @@ function paintStage() {
   }));
   root.appendChild(status);
 
-  root.appendChild(el('p', {
-    class: 'logic-lead',
-    text: 'A hidden fruit order is waiting. Fill the boxes from your hand, '
-      + 'then press Hands up! — the count of right spots flashes once, so memorize it.',
-  }));
-
   const board = el('div', { class: 'logic-board' });
 
-  board.appendChild(el('p', { class: 'eyebrow', text: 'The hidden order' }));
+  board.appendChild(el('p', { class: 'eyebrow', text: 'Guess the order' }));
   board.appendChild(el('div', {
     class: 'logic-slots',
     attrs: { id: 'logic-slots', role: 'group', 'aria-label': 'Your guess, left to right' },
@@ -260,23 +293,21 @@ function paintBoard() {
     slotsEl.appendChild(btn);
   });
 
+  // Placed fruits leave the hand entirely — only the copies still in hand
+  // are rendered (the row keeps its height via CSS so nothing jumps).
   handEl.textContent = '';
   FRUITS.forEach(function (fruit) {
     const remaining = remainingInHand(fruit.key);
-    for (let copy = 0; copy < COPIES_PER_FRUIT; copy++) {
-      const used = copy >= remaining;
-      const selected = !used && copy === 0
+    for (let copy = 0; copy < remaining; copy++) {
+      const selected = copy === 0
         && sel && sel.type === 'hand' && sel.fruit === fruit.key;
       const btn = el('button', {
-        class: 'logic-token'
-          + (used ? ' logic-token--used' : '')
-          + (selected ? ' logic-token--selected' : ''),
+        class: 'logic-token' + (selected ? ' logic-token--selected' : ''),
         attrs: {
           type: 'button',
           'data-fruit': fruit.key,
-          disabled: used ? 'disabled' : null,
           'aria-pressed': selected ? 'true' : 'false',
-          'aria-label': fruit.name + (used ? ' (placed)' : ''),
+          'aria-label': fruit.name,
         },
         text: fruit.emoji,
       });
@@ -407,6 +438,23 @@ function handleHandsUp() {
   flashFeedback('🙌 ' + correct + ' of ' + order.length + ' in the right spot.');
 }
 
+// Intro dismissed — NOW the shared 45-second clock starts.
+function handleIntroStart() {
+  if (!game || game.started) return;
+  game.started = true;
+  game.deadline = Date.now() + TOTAL_TIME_MS;
+  paintStage();
+  startCountdown();
+}
+
+function handleIntroBack() {
+  if (!game) return;
+  const seed = game.seed;
+  const onExit = game.onExit;
+  stopLogicGame();
+  if (typeof onExit === 'function') onExit('back', seed);
+}
+
 function handleGiveUp() {
   if (!game) return;
   const ok = window.confirm('Give up this puzzle and go back?');
@@ -442,6 +490,16 @@ function wireEvents() {
     if (target.closest('#handsup-btn')) {
       event.preventDefault();
       handleHandsUp();
+      return;
+    }
+    if (target.closest('#logic-intro-start-btn')) {
+      event.preventDefault();
+      handleIntroStart();
+      return;
+    }
+    if (target.closest('#logic-intro-back-btn')) {
+      event.preventDefault();
+      handleIntroBack();
       return;
     }
     if (target.closest('#logic-quit-btn')) {
@@ -558,7 +616,8 @@ export function startLogicGame(opts) {
     slots: [],
     selected: null,
     attempts: 0,
-    deadline: Date.now() + TOTAL_TIME_MS,
+    started: false,
+    deadline: 0, // set when the intro is dismissed (handleIntroStart)
     finished: false,
     onExit: opts && typeof opts.onExit === 'function' ? opts.onExit : null,
   };
@@ -566,9 +625,8 @@ export function startLogicGame(opts) {
 
   wireEvents();
   paintSeed(seed);
-  paintStage();
+  paintIntro(); // the clock starts from the intro's Start button, not here
   showScreen('screen-logic');
-  startCountdown();
 }
 
 /** Stop the current game (if any) and clear every timer. Safe to call twice. */
