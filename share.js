@@ -81,7 +81,7 @@ export function buildLogicSummary(seed, result, challengeUrl) {
   }
 
   const lines = [
-    '\u{1F353} Smarty Challenge — Logic',
+    '\u{1F353} Logic Game: Fruit Matching',
     `Game number ${seed}`,
     solvedAll
       ? `All ${totalStages} stages in ${seconds}s`
