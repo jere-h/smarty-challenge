@@ -2,11 +2,12 @@
 //
 // Three stages (hidden orders of 3, 4, then 5 fruits) share ONE 45-second
 // countdown. Each stage hides a seeded random arrangement of strawberry /
-// banana / kiwi that always contains at least one of each fruit and never
-// more than two of any (so it is always buildable from the player's hand of
-// 2 + 2 + 2). The player arranges fruits left-to-right to match; the ONLY
-// feedback is the "Hands up!" button, which flashes "N in the right spot"
-// briefly and then disappears — memorizing that count IS the puzzle.
+// banana / kiwi dealt from the same 2+2+2 pool the player holds — so an
+// order never needs three of one fruit (the hand couldn't build it), but is
+// otherwise unconstrained: it may double up fruits or miss one entirely.
+// The player arranges fruits left-to-right to match; the ONLY feedback is
+// the "Hands up!" button, which flashes "N in the right spot" briefly and
+// then disappears — memorizing that count IS the puzzle.
 //
 // Determinism: the hidden orders come from prng.js's MT19937 keyed on the
 // game number, so the same spoken number builds the same three orders on
@@ -102,27 +103,20 @@ function shuffleInPlace(arr, rng) {
   }
 }
 
-function hasAllFruits(order) {
-  return FRUITS.every((f) => order.indexOf(f.key) !== -1);
-}
-
 function buildStageOrders(seedNum) {
   const rng = makeMT19937(seedNum >>> 0);
   return STAGE_SIZES.map(function (size) {
-    // Draw from the same 2+2+2 pool the player holds, so an order can never
-    // demand three of one fruit; redraw until every fruit appears at least
-    // once. Rejection sampling with integer draws only, so every device
-    // rejects and redraws at exactly the same points (cross-device identical).
+    // Draw from the same 2+2+2 pool the player holds — the one physical
+    // constraint (an order can never demand three of one fruit, or the hand
+    // couldn't build it). Beyond that the composition is unconstrained: a
+    // stage may double up fruits or miss a fruit entirely (e.g. 🥝🥝🍌).
+    // Integer draws only, so every device deals identically from the seed.
     const pool = [];
     for (const f of FRUITS) {
       for (let c = 0; c < COPIES_PER_FRUIT; c++) pool.push(f.key);
     }
-    let order;
-    do {
-      shuffleInPlace(pool, rng);
-      order = pool.slice(0, size);
-    } while (!hasAllFruits(order));
-    return order;
+    shuffleInPlace(pool, rng);
+    return pool.slice(0, size);
   });
 }
 
