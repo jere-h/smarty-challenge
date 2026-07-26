@@ -3,9 +3,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#faf8f5" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#010610" media="(prefers-color-scheme: dark)">
-<meta name="description" content="Race your friends on primary school math or riddles. Works offline.">
+<meta name="description" content="Race your friends on primary school math, riddles or logic puzzles. Works offline.">
 <meta property="og:title" content="Smarty Challenge">
-<meta property="og:description" content="Race your friends on primary school math or riddles. Works offline.">
+<meta property="og:description" content="Race your friends on primary school math, riddles or logic puzzles. Works offline.">
 <meta property="og:type" content="website">
 <title>🤓 Smarty Challenge</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤓</text></svg>">
@@ -49,6 +49,10 @@
             <label class="mode-pill mode-pill--riddles">
               <input type="radio" name="game-mode" value="riddles">
               <span><span class="mode-pill__emoji" aria-hidden="true">&#129513;</span> Riddles</span>
+            </label>
+            <label class="mode-pill mode-pill--logic">
+              <input type="radio" name="game-mode" value="logic">
+              <span><span class="mode-pill__emoji" aria-hidden="true">&#127827;</span> Logic</span>
             </label>
           </fieldset>
 
@@ -188,6 +192,18 @@
       </div>
       <div class="interstitial-actions" id="interstitial-actions">
         <!-- render.js injects #interstitial-start-btn here -->
+      </div>
+    </section>
+
+    <!-- ============ LOGIC: FRUIT ORDER PUZZLE ============ -->
+    <section id="screen-logic" class="screen screen--hidden" aria-labelledby="screen-logic-title">
+      <div class="screen__head">
+        <p class="eyebrow">Logic</p>
+        <h2 id="screen-logic-title" class="screen__title">Guess the fruit order</h2>
+        <p class="screen__lead" id="logic-meta">Game number <span class="mono" id="logic-seed">1234</span> &middot; 45 seconds for all 3 stages</p>
+      </div>
+      <div id="logic-body">
+        <!-- logic.js injects the stage board, hand, timer, and result card here -->
       </div>
     </section>
 

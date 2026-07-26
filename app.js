@@ -17,6 +17,7 @@ import {
 } from './render.js';
 import { buildSummary, shareWhatsApp, shareTelegram, copyToClipboard } from './share.js';
 import { loadState, saveState, clearSession } from './storage.js';
+import { startLogicGame } from './logic.js';
 
 // ---------------------------------------------------------------------------
 // In-memory state (Session). The paper itself lives only here — it is never
@@ -192,11 +193,26 @@ function buildPaperForSeed(seedNum, size, mode) {
   return generatePaper(seedNum, b, buckets);
 }
 
-// The landing screen's Math/Riddles mode pills. Riddles is only honored when
-// the riddle bank actually loaded.
+// The landing screen's Math/Riddles/Logic mode pills. Riddles is only honored
+// when the riddle bank actually loaded; Logic needs no bank at all (its game
+// is generated straight from the seed by logic.js).
 function readMode() {
   const checked = document.querySelector('input[name="game-mode"]:checked');
-  return checked && checked.value === 'riddles' && riddleBank ? 'riddles' : 'math';
+  if (!checked) return 'math';
+  if (checked.value === 'riddles') return riddleBank ? 'riddles' : 'math';
+  if (checked.value === 'logic') return 'logic';
+  return 'math';
+}
+
+// Logic is a fixed-shape game (always 3 stages, always solo), so the paper
+// length picker and the pass-the-phone party toggle don't apply — hide both
+// whenever the Logic pill is selected.
+function updateSeedControlsForMode() {
+  const isLogic = readMode() === 'logic';
+  const lengthPicker = document.getElementById('length-picker');
+  if (lengthPicker) lengthPicker.hidden = isLogic;
+  const partyMode = document.getElementById('party-mode');
+  if (partyMode) partyMode.hidden = isLogic;
 }
 
 // The seed screen's 5/10/20 exam-length picker. Falls back to the classic 20
@@ -505,6 +521,19 @@ function handleStart() {
   }
   setSeedError('');
 
+  // Logic mode — a self-contained timed game owned by logic.js: no paper, no
+  // party, no autosave (the whole game is capped at 45 seconds). The party
+  // toggle and length picker are hidden while Logic is selected, so neither
+  // is consulted here.
+  if (readMode() === 'logic') {
+    session = null;
+    lastResult = null;
+    resultsShown = false;
+    hideResumeNotice();
+    startLogicGame({ seed: parsed.seed, onExit: handleLogicExit });
+    return;
+  }
+
   // D1 — party toggle branch. Toggle left unchecked (the default) falls
   // straight through to the existing solo path below, completely unchanged.
   if (isPartyToggleOn()) {
@@ -714,6 +743,26 @@ function handleSameSeed() {
   const input = document.getElementById('seed-input');
   if (input && playedSeed != null) {
     input.value = String(playedSeed);
+    setSeedError('');
+    input.focus();
+    try { input.select(); } catch (_err) { /* selection unsupported — focus alone still helps */ }
+  }
+}
+
+// Logic-game exit callback (logic.js hands control back here). Mirrors the
+// solo results actions: 'rematch' spins a fresh number, 'same-seed' keeps the
+// just-played one, 'back' (gave up) also keeps it for a quick retry.
+function handleLogicExit(action, seed) {
+  renderSeedScreen();
+  updateSeedControlsForMode();
+  showScreen('screen-seed');
+  if (action === 'rematch') {
+    handleSpinSeed();
+    return;
+  }
+  const input = document.getElementById('seed-input');
+  if (input && seed != null) {
+    input.value = String(seed);
     setSeedError('');
     input.focus();
     try { input.select(); } catch (_err) { /* selection unsupported — focus alone still helps */ }
@@ -1243,10 +1292,11 @@ function readUrlChallenge() {
     const params = new URLSearchParams(window.location.search);
     const game = params.get('game');
     const len = Number(params.get('len'));
+    const mode = params.get('mode');
     return {
       game: game && /^\d{4}$/.test(game) ? game : null,
       len: VALID_PAPER_SIZES.includes(len) ? len : null,
-      mode: params.get('mode') === 'riddles' ? 'riddles' : null,
+      mode: mode === 'riddles' || mode === 'logic' ? mode : null,
     };
   } catch (_err) {
     return { game: null, len: null, mode: null };
@@ -1263,9 +1313,10 @@ function applyUrlChallenge(challenge) {
     const radio = document.querySelector('.length-pill input[value="' + challenge.len + '"]');
     if (radio) radio.checked = true;
   }
-  if (challenge.mode === 'riddles') {
-    const radio = document.querySelector('input[name="game-mode"][value="riddles"]');
+  if (challenge.mode) {
+    const radio = document.querySelector('input[name="game-mode"][value="' + challenge.mode + '"]');
     if (radio) radio.checked = true;
+    updateSeedControlsForMode();
   }
 }
 
@@ -1591,6 +1642,13 @@ function wireEvents() {
       return;
     }
 
+    // Mode pills — Logic hides the length picker and party toggle (neither
+    // applies to the fixed-shape logic game).
+    if (el && el.name === 'game-mode') {
+      updateSeedControlsForMode();
+      return;
+    }
+
     if (!el || !el.name || el.name.indexOf('q-') !== 0) return;
 
     if (el.classList && el.classList.contains('option__input')) {
@@ -1631,6 +1689,7 @@ async function boot() {
   wireServiceWorker();
   wireOnlineOffline();
   updateOfflineIndicator();
+  updateSeedControlsForMode();
   showScreen('screen-seed');
 
   try {

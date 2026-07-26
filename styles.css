@@ -1795,3 +1795,185 @@ button {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
+
+/* ------------------------------------------------- Logic: fruit order game */
+/* The Logic category's swap puzzle (logic.js): a sticky timer bar, the slot
+   row for the guess, the 2+2+2 hand of fruit tokens, and the one transient
+   feedback line. Reuses .btn / .eyebrow / .score-card so the game reads as
+   part of the same family as the quiz screens. */
+
+/* Logic mode hides the paper-length picker and party toggle via the `hidden`
+   attribute; their own display rules would otherwise beat the UA `[hidden]`
+   default (same reasoning as `#submit-btn[hidden]` above). */
+.length-picker[hidden],
+.party-mode[hidden] {
+  display: none;
+}
+
+.logic-status {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.logic-status__timer {
+  font-size: 1.15rem;
+  color: var(--color-fg);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Last 10 seconds — the countdown turns accent so the pressure is visible
+   at arm's length. */
+.logic-status__timer--low {
+  color: var(--color-accent);
+}
+
+.logic-status__quit {
+  min-height: 36px;
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.85rem;
+}
+
+.logic-lead {
+  margin-top: var(--space-3);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+
+.logic-board {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.logic-slots,
+.logic-hand {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+/* A guess box: dashed while empty, solid once a fruit is placed. */
+.logic-slot {
+  width: clamp(48px, 15vw, 68px);
+  aspect-ratio: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7rem;
+  line-height: 1;
+  background: var(--color-bg);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease), transform 0.15s var(--ease);
+}
+
+.logic-slot--filled {
+  border-style: solid;
+  background: var(--color-surface);
+}
+
+.logic-slot--selected,
+.logic-token--selected {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 30%, transparent);
+  transform: translateY(-2px);
+}
+
+.logic-hand-label {
+  margin-top: var(--space-2);
+}
+
+/* A fruit token in the hand. Placed copies stay in the row (dimmed) so the
+   hand always visibly holds 2 of each fruit. */
+.logic-token {
+  width: clamp(44px, 13vw, 60px);
+  aspect-ratio: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  line-height: 1;
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease), transform 0.15s var(--ease), opacity 0.15s var(--ease);
+}
+
+.logic-token--used {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.logic-slot:focus-visible,
+.logic-token:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.logic-actions {
+  margin-top: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.logic-handsup {
+  font-size: 1.05rem;
+  min-height: 52px;
+  padding: var(--space-3) var(--space-6);
+}
+
+/* The ONE feedback channel — reserves its height so the flash never shifts
+   the layout, and fades out (the count must be memorized, not re-read). */
+.logic-feedback {
+  min-height: 2.8em;
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
+  font-size: 1rem;
+  font-weight: 650;
+  color: var(--color-fg);
+  background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-pill);
+  opacity: 0;
+  transition: opacity 0.25s var(--ease);
+}
+
+.logic-feedback:empty {
+  background: transparent;
+  border-color: transparent;
+}
+
+.logic-feedback--show {
+  opacity: 1;
+}
+
+.logic-result-card {
+  margin-top: var(--space-3);
+}
