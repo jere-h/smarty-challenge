@@ -215,6 +215,72 @@ function updateSeedControlsForMode() {
   if (partyMode) partyMode.hidden = isLogic;
 }
 
+// ---------------------------------------------------------------------------
+// Game-choice modal — the Math/Riddles/Logic pills live in #game-modal, not
+// in the hero (three pills crowd a 360px viewport). The hero shows the
+// current pick (#game-current) plus #change-game-btn to reopen the modal.
+// It opens automatically on a fresh landing (see boot's maybeShowStartModal).
+// ---------------------------------------------------------------------------
+
+const MODE_LABELS = {
+  math: { emoji: '📐', name: 'Math' },
+  riddles: { emoji: '🧩', name: 'Riddles' },
+  logic: { emoji: '🍓', name: 'Logic' },
+};
+
+// Mirrors the checked game-mode radio into the hero's "current game" line.
+function syncCurrentGameLabel() {
+  const checked = document.querySelector('input[name="game-mode"]:checked');
+  const info = (checked && MODE_LABELS[checked.value]) || MODE_LABELS.math;
+  const emojiEl = document.getElementById('current-game-emoji');
+  if (emojiEl) emojiEl.textContent = info.emoji;
+  const nameEl = document.getElementById('current-game-name');
+  if (nameEl) nameEl.textContent = info.name;
+}
+
+function isGameModalOpen() {
+  const modal = document.getElementById('game-modal');
+  return !!(modal && modal.classList.contains('game-modal--open'));
+}
+
+function openGameModal() {
+  const modal = document.getElementById('game-modal');
+  if (!modal) return;
+  modal.classList.add('game-modal--open');
+  modal.setAttribute('aria-hidden', 'false');
+  modal.removeAttribute('inert');
+  const backdrop = document.getElementById('game-modal-backdrop');
+  if (backdrop) backdrop.classList.add('game-modal-backdrop--open');
+  const checked = modal.querySelector('input[name="game-mode"]:checked')
+    || modal.querySelector('input[name="game-mode"]');
+  if (checked) checked.focus();
+}
+
+function closeGameModal() {
+  const modal = document.getElementById('game-modal');
+  if (!modal || !modal.classList.contains('game-modal--open')) return;
+  modal.classList.remove('game-modal--open');
+  modal.setAttribute('aria-hidden', 'true');
+  modal.setAttribute('inert', '');
+  const backdrop = document.getElementById('game-modal-backdrop');
+  if (backdrop) backdrop.classList.remove('game-modal-backdrop--open');
+  const changeBtn = document.getElementById('change-game-btn');
+  if (changeBtn) changeBtn.focus();
+}
+
+// The starting modal: ask which game on a fresh landing. A challenge link
+// (?game / ?mode) or a restored session already answers that, so both skip
+// it — only a plain visit that lands on the seed screen sees the modal.
+function maybeShowStartModal() {
+  const seedScreen = document.getElementById('screen-seed');
+  if (!seedScreen || !seedScreen.classList.contains('screen--active')) return;
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('game') || params.get('mode')) return;
+  } catch (_err) { /* unreadable URL — treat as a fresh landing */ }
+  openGameModal();
+}
+
 // The seed screen's 5/10/20 exam-length picker. Falls back to the classic 20
 // if the control is missing or holds an unexpected value.
 function readPaperLength() {
@@ -1317,6 +1383,7 @@ function applyUrlChallenge(challenge) {
     const radio = document.querySelector('input[name="game-mode"][value="' + challenge.mode + '"]');
     if (radio) radio.checked = true;
     updateSeedControlsForMode();
+    syncCurrentGameLabel();
   }
 }
 
@@ -1531,6 +1598,25 @@ function wireEvents() {
       handleStart();
       return;
     }
+    if (target.closest('#change-game-btn')) {
+      event.preventDefault();
+      openGameModal();
+      return;
+    }
+    if (target.closest('#game-modal-close') || target.closest('#game-modal-backdrop')) {
+      event.preventDefault();
+      closeGameModal();
+      return;
+    }
+    // A tap on a modal pill lands here twice: once bubbling from the label,
+    // then as the label's synthetic click on the radio itself. Only the
+    // second one closes the modal — by then the radio is checked and its
+    // `change` handler has synced everything. Closing on the first would put
+    // the modal inert BEFORE the synthetic click, eating the selection.
+    if (target.closest && target.matches && target.matches('input[name="game-mode"]')) {
+      closeGameModal();
+      return;
+    }
     if (target.closest('#submit-btn')) {
       event.preventDefault();
       requestSubmit();
@@ -1618,6 +1704,14 @@ function wireEvents() {
     }
   });
 
+  // Escape dismisses the game-choice modal (the standard dialog dismiss).
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && isGameModalOpen()) {
+      event.preventDefault();
+      closeGameModal();
+    }
+  });
+
   // B2 — the same submit funnel as #submit-btn's click: #submit-btn is the
   // quiz form's default button (type="submit" + form="quiz-form"), so Enter
   // in any quiz field fires this via the browser's implicit-submission
@@ -1643,9 +1737,12 @@ function wireEvents() {
     }
 
     // Mode pills — Logic hides the length picker and party toggle (neither
-    // applies to the fixed-shape logic game).
+    // applies to the fixed-shape logic game). The hero's "current game" line
+    // mirrors the pick. Arrow-key changes keep the modal open for browsing;
+    // only a click (or Space) on a pill closes it, in the click handler above.
     if (el && el.name === 'game-mode') {
       updateSeedControlsForMode();
+      syncCurrentGameLabel();
       return;
     }
 
@@ -1690,6 +1787,7 @@ async function boot() {
   wireOnlineOffline();
   updateOfflineIndicator();
   updateSeedControlsForMode();
+  syncCurrentGameLabel();
   showScreen('screen-seed');
 
   try {
@@ -1710,6 +1808,10 @@ async function boot() {
   }
 
   attemptRestore();
+
+  // Fresh landing on the seed screen (no challenge link, nothing restored):
+  // open the starting modal so picking a game is the first step.
+  maybeShowStartModal();
 }
 
 if (document.readyState === 'loading') {

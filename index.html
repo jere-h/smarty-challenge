@@ -40,21 +40,10 @@
         <div class="seed-hero__orb" aria-hidden="true"></div>
         <div class="seed-hero__inner">
           <h2 id="screen-seed-title" class="sr-only">Choose a mode and start a paper</h2>
-          <fieldset class="mode-picker" id="mode-picker">
-            <legend class="sr-only">Game mode</legend>
-            <label class="mode-pill">
-              <input type="radio" name="game-mode" value="math" checked>
-              <span><span class="mode-pill__emoji" aria-hidden="true">&#128208;</span> Math</span>
-            </label>
-            <label class="mode-pill mode-pill--riddles">
-              <input type="radio" name="game-mode" value="riddles">
-              <span><span class="mode-pill__emoji" aria-hidden="true">&#129513;</span> Riddles</span>
-            </label>
-            <label class="mode-pill mode-pill--logic">
-              <input type="radio" name="game-mode" value="logic">
-              <span><span class="mode-pill__emoji" aria-hidden="true">&#127827;</span> Logic</span>
-            </label>
-          </fieldset>
+          <div class="game-current" id="game-current">
+            <span class="game-current__value"><span class="game-current__emoji" aria-hidden="true" id="current-game-emoji">&#128208;</span> <span id="current-game-name">Math</span></span>
+            <button class="btn btn--ghost game-current__change" id="change-game-btn" type="button">Select a different game</button>
+          </div>
 
           <form class="seed-form" id="seed-form" novalidate>
             <label class="seed-form__label" for="seed-input">Pick a 4 digit number</label>
@@ -128,6 +117,51 @@
           </div>
           <p class="seed-hero__tiebreak">Score wins; ties go to the faster time.</p>
         </div>
+      </div>
+
+      <!-- Starting modal: pick a game. The Math/Riddles/Logic pills live here
+           (not in the hero) so three choices never crowd the seed card; the
+           hero shows the current pick plus #change-game-btn to reopen this.
+           It opens automatically on a fresh landing (app.js's boot). -->
+      <div class="game-modal-backdrop" id="game-modal-backdrop" aria-hidden="true"></div>
+      <div class="game-modal" id="game-modal" role="dialog" aria-modal="true" aria-labelledby="game-modal-title" aria-hidden="true" inert>
+        <div class="game-modal__head">
+          <h2 class="game-modal__title" id="game-modal-title">Choose your game</h2>
+          <button class="btn btn--ghost game-modal__close" id="game-modal-close" type="button" aria-label="Close game selection">&#10005;</button>
+        </div>
+        <fieldset class="mode-picker mode-picker--modal" id="mode-picker">
+          <legend class="sr-only">Game mode</legend>
+          <label class="mode-pill">
+            <input type="radio" name="game-mode" value="math" checked>
+            <span>
+              <span class="mode-pill__emoji" aria-hidden="true">&#128208;</span>
+              <span class="mode-pill__body">
+                <span class="mode-pill__name">Math</span>
+                <span class="mode-pill__desc">A primary school paper</span>
+              </span>
+            </span>
+          </label>
+          <label class="mode-pill mode-pill--riddles">
+            <input type="radio" name="game-mode" value="riddles">
+            <span>
+              <span class="mode-pill__emoji" aria-hidden="true">&#129513;</span>
+              <span class="mode-pill__body">
+                <span class="mode-pill__name">Riddles</span>
+                <span class="mode-pill__desc">Tricky wordplay teasers</span>
+              </span>
+            </span>
+          </label>
+          <label class="mode-pill mode-pill--logic">
+            <input type="radio" name="game-mode" value="logic">
+            <span>
+              <span class="mode-pill__emoji" aria-hidden="true">&#127827;</span>
+              <span class="mode-pill__body">
+                <span class="mode-pill__name">Logic</span>
+                <span class="mode-pill__desc">Guess the fruit order in 45 seconds</span>
+              </span>
+            </span>
+          </label>
+        </fieldset>
       </div>
     </section>
 

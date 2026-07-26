@@ -1727,7 +1727,8 @@ button {
 }
 
 /* -------------------------------------------------------- Mode picker pills */
-/* Math vs Riddles — the hero's headline control, replacing the old title. */
+/* Math / Riddles / Logic — the pills live inside #game-modal (below); the
+   hero shows the current pick plus the reopen button instead. */
 .mode-picker {
   border: 0;
   padding: 0;
@@ -1794,6 +1795,142 @@ button {
 .mode-pill input:focus-visible + span {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
+}
+
+/* --------------------------------------------- Game choice modal + summary */
+/* The hero's "current game" line — the pick made in the modal, plus the
+   button that reopens it. */
+.game-current {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.game-current__value {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.game-current__emoji {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.game-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 24;
+  background: rgba(2, 6, 13, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s var(--ease);
+}
+
+.game-modal-backdrop--open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Closed: faded/scaled out AND visibility:hidden (delayed until the fade
+   ends) so it is untabbable without display:none killing the animation.
+   The inert attribute in the markup backstops focus and assistive tech. */
+.game-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 25;
+  width: min(420px, calc(100vw - var(--space-5) * 2));
+  max-height: calc(100vh - var(--space-6));
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  transform: translate(-50%, -50%) scale(0.96);
+  opacity: 0;
+  visibility: hidden;
+  transition: transform 0.2s var(--ease), opacity 0.2s var(--ease), visibility 0s linear 0.2s;
+}
+
+.game-modal--open {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  visibility: visible;
+  transition: transform 0.2s var(--ease), opacity 0.2s var(--ease);
+}
+
+.game-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.game-modal__title {
+  font-size: 1.3rem;
+}
+
+.game-modal__close {
+  min-height: 40px;
+  padding: var(--space-1) var(--space-3);
+}
+
+/* Inside the modal the pills stack vertically, each with a name and a
+   one-line description (the row layout is the .mode-picker default). */
+.mode-picker--modal {
+  flex-direction: column;
+}
+
+/* Direct child only — a bare `span` here would also hit the nested name /
+   desc spans and out-specify the `.mode-pill span span` reset above. */
+.mode-picker--modal .mode-pill > span {
+  justify-content: flex-start;
+  text-align: left;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
+.mode-picker--modal .mode-pill__emoji {
+  font-size: 1.6rem;
+}
+
+.mode-picker--modal .mode-pill__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* the base `.mode-pill span` centering also matches this span */
+  gap: 2px;
+  min-width: 0;
+}
+
+.mode-picker--modal .mode-pill__desc {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--color-muted);
+}
+
+.mode-picker--modal .mode-pill input:checked + span .mode-pill__desc {
+  color: inherit;
+  opacity: 0.85;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-modal,
+  .game-modal--open,
+  .game-modal-backdrop {
+    transition: none;
+  }
 }
 
 /* ------------------------------------------------- Logic: fruit order game */
@@ -1917,9 +2054,16 @@ button {
   gap: var(--space-2);
 }
 
+/* The guess row never wraps — 3, 4, or 5 boxes always share one line,
+   shrinking equally when the clamp basis would overflow a narrow phone. */
+.logic-slots {
+  flex-wrap: nowrap;
+}
+
 /* A guess box: dashed while empty, solid once a fruit is placed. */
 .logic-slot {
-  width: clamp(58px, 18vw, 88px);
+  flex: 0 1 clamp(58px, 18vw, 88px);
+  min-width: 0;
   aspect-ratio: 1;
   display: inline-flex;
   align-items: center;
@@ -1936,6 +2080,16 @@ button {
   border-style: solid;
   background: var(--color-surface);
   cursor: grab;
+}
+
+/* The 4- and 5-box stages: smaller emoji so the shrunken boxes still hold
+   their fruit comfortably (paintStage sets the count class). */
+.logic-slots--4 .logic-slot {
+  font-size: clamp(1.5rem, 8vw, 2.4rem);
+}
+
+.logic-slots--5 .logic-slot {
+  font-size: clamp(1.3rem, 6.5vw, 2.4rem);
 }
 
 .logic-hand-label {
@@ -2068,4 +2222,56 @@ body.logic-dragging {
 
 .logic-result-card {
   margin-top: var(--space-3);
+}
+
+/* Stage-cleared interstitial — a short celebratory card between stages
+   (logic.js pauses the countdown while it shows), so the next board never
+   appears abruptly mid-thought. */
+.logic-stage-clear {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-5);
+  text-align: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  animation: logic-stage-clear-pop 0.35s var(--ease);
+}
+
+.logic-stage-clear__emoji {
+  font-size: 2.6rem;
+  line-height: 1;
+}
+
+.logic-stage-clear__title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.logic-stage-clear__next {
+  color: var(--color-muted);
+  font-weight: 600;
+}
+
+@keyframes logic-stage-clear-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logic-stage-clear {
+    animation: none;
+  }
 }

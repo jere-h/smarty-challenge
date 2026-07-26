@@ -31,6 +31,10 @@ const STAGE_SIZES = [3, 4, 5];
 const COPIES_PER_FRUIT = 2;
 const TOTAL_TIME_MS = 45 * 1000;
 const FEEDBACK_MS = 1800; // how long a "Hands up!" count stays on screen
+// The stage-cleared interstitial between stages. The countdown pauses for
+// exactly this long (the deadline shifts by the same fixed amount on every
+// device), so the pause never eats play time and times stay comparable.
+const STAGE_CLEAR_MS = 1300;
 const TICK_MS = 100; // countdown repaint cadence (tenths of a second)
 const LOW_TIME_MS = 10 * 1000;
 
@@ -54,6 +58,7 @@ function fruitByKey(key) {
 let game = null;
 let countdownHandle = null;
 let feedbackHandle = null;
+let stageClearHandle = null;
 let eventsWired = false;
 
 /* ------------------------------------------------------------------ *
@@ -235,8 +240,10 @@ function paintStage() {
   const board = el('div', { class: 'logic-board' });
 
   board.appendChild(el('p', { class: 'eyebrow', text: 'Guess the order' }));
+  // The size class drives the one-line guarantee: the row never wraps, and
+  // the 4- and 5-box stages shrink their boxes/emoji to fit narrow phones.
   board.appendChild(el('div', {
-    class: 'logic-slots',
+    class: 'logic-slots logic-slots--' + size,
     attrs: { id: 'logic-slots', role: 'group', 'aria-label': 'Your guess, left to right' },
   }));
 
@@ -378,12 +385,48 @@ function handleHandsUp() {
     }
     game.stage += 1;
     setupStageState();
-    paintStage();
-    flashFeedback('✅ Stage ' + game.stage + ' cleared! Now ' + currentOrder().length + ' fruits.');
+    showStageClear();
     return;
   }
 
   flashFeedback('🙌 ' + correct + ' of ' + order.length + ' in the right spot.');
+}
+
+function clearStageClearTimer() {
+  if (stageClearHandle != null) {
+    clearTimeout(stageClearHandle);
+    stageClearHandle = null;
+  }
+}
+
+// Stage cleared (and it wasn't the last) — a short celebratory card between
+// stages so the next board never appears mid-thought. The countdown pauses
+// while it shows (deadline shifted by STAGE_CLEAR_MS, see the constant), and
+// the board is gone, so nothing is interactable until the next stage paints.
+function showStageClear() {
+  stopCountdown();
+  game.deadline += STAGE_CLEAR_MS;
+
+  const root = bodyRoot();
+  if (root) {
+    root.textContent = '';
+    const card = el('div', {
+      class: 'logic-stage-clear',
+      attrs: { role: 'status', 'aria-live': 'polite' },
+    });
+    card.appendChild(el('p', { class: 'logic-stage-clear__emoji', attrs: { 'aria-hidden': 'true' }, text: '✅' }));
+    card.appendChild(el('p', { class: 'logic-stage-clear__title', text: 'Stage ' + game.stage + ' cleared!' }));
+    card.appendChild(el('p', { class: 'logic-stage-clear__next', text: 'Next: ' + currentOrder().length + ' fruits' }));
+    root.appendChild(card);
+  }
+
+  clearStageClearTimer();
+  stageClearHandle = window.setTimeout(function () {
+    stageClearHandle = null;
+    if (!game || game.finished) return;
+    paintStage();
+    startCountdown();
+  }, STAGE_CLEAR_MS);
 }
 
 // Intro dismissed — NOW the shared 45-second clock starts.
@@ -745,6 +788,7 @@ export function startLogicGame(opts) {
 export function stopLogicGame() {
   stopCountdown();
   clearFeedbackTimer();
+  clearStageClearTimer();
   endDrag();
   game = null;
 }
