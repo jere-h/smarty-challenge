@@ -31,10 +31,10 @@ const STAGE_SIZES = [3, 4, 5];
 const COPIES_PER_FRUIT = 2;
 const TOTAL_TIME_MS = 45 * 1000;
 const FEEDBACK_MS = 1800; // how long a "Hands up!" count stays on screen
-// The stage-cleared interstitial between stages. The countdown pauses for
-// exactly this long (the deadline shifts by the same fixed amount on every
-// device), so the pause never eats play time and times stay comparable.
-const STAGE_CLEAR_MS = 1300;
+// Auto-fade time for the stage-cleared popup. The clock KEEPS RUNNING under
+// it — the popup ignores the pointer, sits over the fresh board, and fades
+// on the player's first interaction or after this timeout, whichever first.
+const STAGE_POP_MS = 1500;
 const TICK_MS = 100; // countdown repaint cadence (tenths of a second)
 const LOW_TIME_MS = 10 * 1000;
 
@@ -58,7 +58,7 @@ function fruitByKey(key) {
 let game = null;
 let countdownHandle = null;
 let feedbackHandle = null;
-let stageClearHandle = null;
+let stagePopHandle = null;
 let eventsWired = false;
 
 /* ------------------------------------------------------------------ *
@@ -385,48 +385,46 @@ function handleHandsUp() {
     }
     game.stage += 1;
     setupStageState();
-    showStageClear();
+    paintStage();
+    // Short on purpose — the new stage's size is already in the status bar.
+    showStagePop('✅ Stage ' + game.stage + ' cleared!');
     return;
   }
 
   flashFeedback('🙌 ' + correct + ' of ' + order.length + ' in the right spot.');
 }
 
-function clearStageClearTimer() {
-  if (stageClearHandle != null) {
-    clearTimeout(stageClearHandle);
-    stageClearHandle = null;
+// Fade the stage-cleared popup out (if one is up) and drop it from the DOM.
+// Safe to call any time — it is a no-op without a live popup.
+function dismissStagePop() {
+  if (stagePopHandle != null) {
+    clearTimeout(stagePopHandle);
+    stagePopHandle = null;
   }
+  const pop = document.getElementById('logic-stage-pop');
+  if (!pop) return;
+  pop.removeAttribute('id'); // a new popup can claim the id mid-fade
+  pop.classList.add('logic-stage-pop--fade');
+  window.setTimeout(function () {
+    if (pop.parentNode) pop.parentNode.removeChild(pop);
+  }, 300);
 }
 
-// Stage cleared (and it wasn't the last) — a short celebratory card between
-// stages so the next board never appears mid-thought. The countdown pauses
-// while it shows (deadline shifted by STAGE_CLEAR_MS, see the constant), and
-// the board is gone, so nothing is interactable until the next stage paints.
-function showStageClear() {
-  stopCountdown();
-  game.deadline += STAGE_CLEAR_MS;
-
-  const root = bodyRoot();
-  if (root) {
-    root.textContent = '';
-    const card = el('div', {
-      class: 'logic-stage-clear',
-      attrs: { role: 'status', 'aria-live': 'polite' },
-    });
-    card.appendChild(el('p', { class: 'logic-stage-clear__emoji', attrs: { 'aria-hidden': 'true' }, text: '✅' }));
-    card.appendChild(el('p', { class: 'logic-stage-clear__title', text: 'Stage ' + game.stage + ' cleared!' }));
-    card.appendChild(el('p', { class: 'logic-stage-clear__next', text: 'Next: ' + currentOrder().length + ' fruits' }));
-    root.appendChild(card);
-  }
-
-  clearStageClearTimer();
-  stageClearHandle = window.setTimeout(function () {
-    stageClearHandle = null;
-    if (!game || game.finished) return;
-    paintStage();
-    startCountdown();
-  }, STAGE_CLEAR_MS);
+// Stage cleared (and it wasn't the last) — a small transient popup OVER the
+// already-painted next board. It never blocks play: the clock keeps running,
+// pointer-events pass straight through it, and the player's first
+// pointerdown anywhere (see handleDragDown) fades it early.
+function showStagePop(text) {
+  dismissStagePop();
+  document.body.appendChild(el('div', {
+    class: 'logic-stage-pop',
+    attrs: { id: 'logic-stage-pop', role: 'status', 'aria-live': 'polite' },
+    text,
+  }));
+  stagePopHandle = window.setTimeout(function () {
+    stagePopHandle = null;
+    dismissStagePop();
+  }, STAGE_POP_MS);
 }
 
 // Intro dismissed — NOW the shared 45-second clock starts.
@@ -502,6 +500,7 @@ function endDrag() {
 }
 
 function handleDragDown(event) {
+  dismissStagePop(); // any touch fades the stage-cleared popup early
   if (!game || !game.started || game.finished || drag) return;
   if (event.button != null && event.button !== 0) return;
   const target = event.target;
@@ -689,6 +688,7 @@ function finishGame(solvedAll) {
   if (!game || game.finished) return;
   game.finished = true;
   endDrag(); // the clock can run out mid-drag — never strand a ghost
+  dismissStagePop();
   const usedMs = solvedAll
     ? Math.min(TOTAL_TIME_MS, Math.max(0, TOTAL_TIME_MS - (game.deadline - Date.now())))
     : TOTAL_TIME_MS;
@@ -788,7 +788,7 @@ export function startLogicGame(opts) {
 export function stopLogicGame() {
   stopCountdown();
   clearFeedbackTimer();
-  clearStageClearTimer();
+  dismissStagePop();
   endDrag();
   game = null;
 }

@@ -2224,54 +2224,51 @@ body.logic-dragging {
   margin-top: var(--space-3);
 }
 
-/* Stage-cleared interstitial — a short celebratory card between stages
-   (logic.js pauses the countdown while it shows), so the next board never
-   appears abruptly mid-thought. */
-.logic-stage-clear {
-  margin-top: var(--space-3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-6) var(--space-5);
+/* Stage-cleared popup — a small transient toast floating over the fresh
+   board. The clock keeps running underneath: pointer-events:none lets every
+   touch pass straight through to the board, and logic.js fades it on the
+   player's first pointerdown (or after its short auto-fade timeout). */
+.logic-stage-pop {
+  position: fixed;
+  top: 38%; /* below the sticky status bar, so the running timer stays visible */
+  left: 50%;
+  z-index: 30;
+  width: max-content; /* left:50% halves the shrink-to-fit space — don't wrap early */
+  max-width: min(92vw, 420px);
+  padding: var(--space-3) var(--space-5);
   text-align: center;
+  font-weight: 700;
+  font-size: 1.05rem;
   background: var(--color-surface);
   border: 1px solid var(--color-accent);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  animation: logic-stage-clear-pop 0.35s var(--ease);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-lg);
+  pointer-events: none;
+  transform: translateX(-50%);
+  transition: opacity 0.25s var(--ease), transform 0.25s var(--ease);
+  animation: logic-stage-pop-in 0.3s var(--ease);
 }
 
-.logic-stage-clear__emoji {
-  font-size: 2.6rem;
-  line-height: 1;
+.logic-stage-pop--fade {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-8px);
 }
 
-.logic-stage-clear__title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
-.logic-stage-clear__next {
-  color: var(--color-muted);
-  font-weight: 600;
-}
-
-@keyframes logic-stage-clear-pop {
+@keyframes logic-stage-pop-in {
   from {
     opacity: 0;
-    transform: scale(0.92);
+    transform: translateX(-50%) scale(0.9);
   }
 
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translateX(-50%) scale(1);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .logic-stage-clear {
+  .logic-stage-pop {
     animation: none;
+    transition: opacity 0.25s var(--ease);
   }
 }
