@@ -1796,140 +1796,19 @@ button {
   outline-offset: 2px;
 }
 
-/* -------------------------------------------- Logic drawer (seed screen) */
-/* Logic is not a third mode pill — three pills overflow a 360px viewport.
-   Instead a tab hugs the right edge of the seed screen and slides this
-   panel in. Tab, backdrop, and drawer all live inside #screen-seed, so
-   .screen--hidden's display:none takes the whole set off-screen together. */
-
-.logic-tab {
-  position: fixed;
-  top: 50%;
-  right: 0;
-  transform: translateY(-50%);
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-3) var(--space-2);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-right: 0;
-  border-radius: var(--radius) 0 0 var(--radius);
-  box-shadow: var(--shadow-md);
-  color: var(--color-fg);
-  font: inherit;
-  font-weight: 650;
-  cursor: pointer;
-  transition: box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
-}
-
-.logic-tab:hover {
-  border-color: var(--color-accent);
-  box-shadow: var(--shadow-lg);
-}
-
-.logic-tab:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-}
-
-.logic-tab__emoji {
-  font-size: 1.3rem;
-  line-height: 1;
-}
-
-.logic-tab__label {
-  writing-mode: vertical-rl;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.logic-drawer-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 24;
-  background: rgba(2, 6, 13, 0.35);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s var(--ease);
-}
-
-.logic-drawer-backdrop--open {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* Closed: slid fully off the right edge AND visibility:hidden (delayed until
-   the slide finishes) so the panel is untabbable without display:none killing
-   the animation. The inert attribute in the markup backstops focus/AT. */
-.logic-drawer {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 25;
-  width: min(320px, 88vw);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-5) var(--space-4);
-  background: var(--color-surface);
-  border-left: 1px solid var(--color-border);
-  box-shadow: var(--shadow-lg);
-  overflow-y: auto;
-  transform: translateX(100%);
-  visibility: hidden;
-  transition: transform 0.3s var(--ease), visibility 0s linear 0.3s;
-}
-
-.logic-drawer--open {
-  transform: translateX(0);
-  visibility: visible;
-  transition: transform 0.3s var(--ease);
-}
-
-.logic-drawer__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.logic-drawer__close {
-  min-height: 40px;
-  padding: var(--space-1) var(--space-3);
-}
-
-.logic-drawer__title {
-  font-size: 1.3rem;
-}
-
-.logic-drawer__lead,
-.logic-drawer__note {
-  color: var(--color-muted);
-  font-size: 0.92rem;
-}
-
-/* Bottom-pinned so the tap target sits in thumb reach on phones. */
-.logic-drawer__play {
-  margin-top: auto;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .logic-drawer,
-  .logic-drawer--open,
-  .logic-drawer-backdrop {
-    transition: none;
-  }
-}
-
 /* ------------------------------------------------- Logic: fruit order game */
 /* The Logic category's swap puzzle (logic.js): a sticky timer bar, the slot
    row for the guess, the 2+2+2 hand of fruit tokens, and the one transient
    feedback line. Reuses .btn / .eyebrow / .score-card so the game reads as
    part of the same family as the quiz screens. */
+
+/* Logic mode hides the paper-length picker and party toggle via the `hidden`
+   attribute; their own display rules would otherwise beat the UA `[hidden]`
+   default (same reasoning as `#submit-btn[hidden]` above). */
+.length-picker[hidden],
+.party-mode[hidden] {
+  display: none;
+}
 
 .logic-status {
   position: sticky;

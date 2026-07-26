@@ -50,6 +50,10 @@
               <input type="radio" name="game-mode" value="riddles">
               <span><span class="mode-pill__emoji" aria-hidden="true">&#129513;</span> Riddles</span>
             </label>
+            <label class="mode-pill mode-pill--logic">
+              <input type="radio" name="game-mode" value="logic">
+              <span><span class="mode-pill__emoji" aria-hidden="true">&#127827;</span> Logic</span>
+            </label>
           </fieldset>
 
           <form class="seed-form" id="seed-form" novalidate>
@@ -125,28 +129,6 @@
           <p class="seed-hero__tiebreak">Score wins; ties go to the faster time.</p>
         </div>
       </div>
-
-      <!-- Logic lives in its own slide-in drawer (not a third mode pill —
-           three pills overflow narrow screens). The tab hugs the right edge
-           while the seed screen is active; everything sits inside
-           #screen-seed so screen--hidden hides the whole set. -->
-      <button class="logic-tab" id="logic-tab" type="button" aria-expanded="false" aria-controls="logic-drawer">
-        <span class="logic-tab__emoji" aria-hidden="true">&#127827;</span>
-        <span class="logic-tab__label">Logic</span>
-      </button>
-
-      <div class="logic-drawer-backdrop" id="logic-drawer-backdrop" aria-hidden="true"></div>
-
-      <aside class="logic-drawer" id="logic-drawer" role="dialog" aria-modal="true" aria-labelledby="logic-drawer-title" aria-hidden="true" inert>
-        <div class="logic-drawer__head">
-          <p class="eyebrow">Logic</p>
-          <button class="btn btn--ghost logic-drawer__close" id="logic-drawer-close" type="button" aria-label="Close the Logic panel">&#10005;</button>
-        </div>
-        <h2 class="logic-drawer__title" id="logic-drawer-title"><span aria-hidden="true">&#127827;</span> Guess the fruit order</h2>
-        <p class="logic-drawer__lead">Three hidden fruit orders, one 45-second clock. Arrange your fruits to match &mdash; the only clue is how many are in the right spot.</p>
-        <p class="logic-drawer__note">Plays your game number <span class="mono" id="logic-drawer-seed">1234</span> &mdash; the same number builds the same puzzle on every phone.</p>
-        <button class="btn btn--primary logic-drawer__play" id="logic-play-btn" type="button">Play Logic</button>
-      </aside>
     </section>
 
     <!-- ============ QUIZ ============ -->
