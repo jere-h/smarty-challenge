@@ -193,26 +193,15 @@ function buildPaperForSeed(seedNum, size, mode) {
   return generatePaper(seedNum, b, buckets);
 }
 
-// The landing screen's Math/Riddles/Logic mode pills. Riddles is only honored
-// when the riddle bank actually loaded; Logic needs no bank at all (its game
-// is generated straight from the seed by logic.js).
+// The landing screen's Math/Riddles mode pills. Riddles is only honored when
+// the riddle bank actually loaded. Logic is NOT a pill — it lives in the
+// #logic-drawer side panel and starts through handleLogicPlay, so it never
+// shows up here.
 function readMode() {
   const checked = document.querySelector('input[name="game-mode"]:checked');
   if (!checked) return 'math';
   if (checked.value === 'riddles') return riddleBank ? 'riddles' : 'math';
-  if (checked.value === 'logic') return 'logic';
   return 'math';
-}
-
-// Logic is a fixed-shape game (always 3 stages, always solo), so the paper
-// length picker and the pass-the-phone party toggle don't apply — hide both
-// whenever the Logic pill is selected.
-function updateSeedControlsForMode() {
-  const isLogic = readMode() === 'logic';
-  const lengthPicker = document.getElementById('length-picker');
-  if (lengthPicker) lengthPicker.hidden = isLogic;
-  const partyMode = document.getElementById('party-mode');
-  if (partyMode) partyMode.hidden = isLogic;
 }
 
 // The seed screen's 5/10/20 exam-length picker. Falls back to the classic 20
@@ -521,19 +510,6 @@ function handleStart() {
   }
   setSeedError('');
 
-  // Logic mode — a self-contained timed game owned by logic.js: no paper, no
-  // party, no autosave (the whole game is capped at 45 seconds). The party
-  // toggle and length picker are hidden while Logic is selected, so neither
-  // is consulted here.
-  if (readMode() === 'logic') {
-    session = null;
-    lastResult = null;
-    resultsShown = false;
-    hideResumeNotice();
-    startLogicGame({ seed: parsed.seed, onExit: handleLogicExit });
-    return;
-  }
-
   // D1 — party toggle branch. Toggle left unchecked (the default) falls
   // straight through to the existing solo path below, completely unchanged.
   if (isPartyToggleOn()) {
@@ -749,21 +725,101 @@ function handleSameSeed() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Logic drawer — the fruit-order game's home on the seed screen. Logic is not
+// a third mode pill (three pills overflow narrow screens); instead a tab on
+// the right edge slides this panel in, and its Play button starts the game.
+// ---------------------------------------------------------------------------
+
+function isLogicDrawerOpen() {
+  const drawer = document.getElementById('logic-drawer');
+  return !!(drawer && drawer.classList.contains('logic-drawer--open'));
+}
+
+// The drawer's "Plays your game number NNNN" line mirrors the seed input so
+// the number stays visible even while the panel covers the form.
+function syncLogicDrawerSeed() {
+  const display = document.getElementById('logic-drawer-seed');
+  if (display) display.textContent = readSeedInput() || '—';
+}
+
+function openLogicDrawer() {
+  const drawer = document.getElementById('logic-drawer');
+  if (!drawer) return;
+  syncLogicDrawerSeed();
+  drawer.classList.add('logic-drawer--open');
+  drawer.setAttribute('aria-hidden', 'false');
+  drawer.removeAttribute('inert');
+  const backdrop = document.getElementById('logic-drawer-backdrop');
+  if (backdrop) backdrop.classList.add('logic-drawer-backdrop--open');
+  const tab = document.getElementById('logic-tab');
+  if (tab) tab.setAttribute('aria-expanded', 'true');
+  const play = document.getElementById('logic-play-btn');
+  if (play) play.focus();
+}
+
+// refocusTab:false skips handing focus back to the edge tab — used when the
+// close is part of leaving the seed screen (starting the game), where the tab
+// is about to be hidden anyway.
+function closeLogicDrawer(refocusTab) {
+  const drawer = document.getElementById('logic-drawer');
+  if (!drawer) return;
+  drawer.classList.remove('logic-drawer--open');
+  drawer.setAttribute('aria-hidden', 'true');
+  drawer.setAttribute('inert', '');
+  const backdrop = document.getElementById('logic-drawer-backdrop');
+  if (backdrop) backdrop.classList.remove('logic-drawer-backdrop--open');
+  const tab = document.getElementById('logic-tab');
+  if (tab) {
+    tab.setAttribute('aria-expanded', 'false');
+    if (refocusTab !== false) tab.focus();
+  }
+}
+
+// #logic-play-btn — starts the logic game with the current game number. The
+// game needs no question bank (logic.js builds it straight from the seed), so
+// unlike handleStart there is no bank guard. A self-contained timed game: no
+// paper, no party, no autosave (the whole game is capped at 45 seconds).
+function handleLogicPlay() {
+  const parsed = parseSeed(readSeedInput());
+  if ('error' in parsed) {
+    closeLogicDrawer(false);
+    setSeedError(parsed.error);
+    const input = document.getElementById('seed-input');
+    if (input) input.focus();
+    return;
+  }
+  setSeedError('');
+  session = null;
+  lastResult = null;
+  resultsShown = false;
+  hideResumeNotice();
+  closeLogicDrawer(false);
+  startLogicGame({ seed: parsed.seed, onExit: handleLogicExit });
+}
+
 // Logic-game exit callback (logic.js hands control back here). Mirrors the
 // solo results actions: 'rematch' spins a fresh number, 'same-seed' keeps the
-// just-played one, 'back' (gave up) also keeps it for a quick retry.
+// just-played one — both reopen the drawer so Play is one tap away. 'back'
+// (gave up) keeps the number too but lands on the plain seed screen.
 function handleLogicExit(action, seed) {
   renderSeedScreen();
-  updateSeedControlsForMode();
   showScreen('screen-seed');
   if (action === 'rematch') {
     handleSpinSeed();
+    openLogicDrawer();
     return;
   }
   const input = document.getElementById('seed-input');
   if (input && seed != null) {
     input.value = String(seed);
     setSeedError('');
+  }
+  if (action === 'same-seed') {
+    openLogicDrawer();
+    return;
+  }
+  if (input) {
     input.focus();
     try { input.select(); } catch (_err) { /* selection unsupported — focus alone still helps */ }
   }
@@ -1313,10 +1369,13 @@ function applyUrlChallenge(challenge) {
     const radio = document.querySelector('.length-pill input[value="' + challenge.len + '"]');
     if (radio) radio.checked = true;
   }
-  if (challenge.mode) {
-    const radio = document.querySelector('input[name="game-mode"][value="' + challenge.mode + '"]');
+  if (challenge.mode === 'riddles') {
+    const radio = document.querySelector('input[name="game-mode"][value="riddles"]');
     if (radio) radio.checked = true;
-    updateSeedControlsForMode();
+  } else if (challenge.mode === 'logic') {
+    // Logic is not a mode pill — a logic challenge link slides its drawer
+    // open instead, with the shared number already prefilled above.
+    openLogicDrawer();
   }
 }
 
@@ -1531,6 +1590,21 @@ function wireEvents() {
       handleStart();
       return;
     }
+    if (target.closest('#logic-tab')) {
+      event.preventDefault();
+      if (isLogicDrawerOpen()) closeLogicDrawer(); else openLogicDrawer();
+      return;
+    }
+    if (target.closest('#logic-drawer-close') || target.closest('#logic-drawer-backdrop')) {
+      event.preventDefault();
+      closeLogicDrawer();
+      return;
+    }
+    if (target.closest('#logic-play-btn')) {
+      event.preventDefault();
+      handleLogicPlay();
+      return;
+    }
     if (target.closest('#submit-btn')) {
       event.preventDefault();
       requestSubmit();
@@ -1642,13 +1716,6 @@ function wireEvents() {
       return;
     }
 
-    // Mode pills — Logic hides the length picker and party toggle (neither
-    // applies to the fixed-shape logic game).
-    if (el && el.name === 'game-mode') {
-      updateSeedControlsForMode();
-      return;
-    }
-
     if (!el || !el.name || el.name.indexOf('q-') !== 0) return;
 
     if (el.classList && el.classList.contains('option__input')) {
@@ -1663,6 +1730,14 @@ function wireEvents() {
     autosaveTick();
   });
 
+  // Escape slides the Logic drawer shut (the standard dismiss for a dialog).
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && isLogicDrawerOpen()) {
+      event.preventDefault();
+      closeLogicDrawer();
+    }
+  });
+
   // A2 — text fields fire `change` only on blur; `input` is what captures
   // keystrokes so a dropped session never loses more than ~500ms of typing.
   document.addEventListener('input', (event) => {
@@ -1671,6 +1746,13 @@ function wireEvents() {
     // D1 — live "rejects duplicates inline" feedback while typing a roster name.
     if (el && el.classList && el.classList.contains('party-roster__input')) {
       checkRosterLiveDuplicates();
+      return;
+    }
+
+    // Keep the drawer's "Plays your game number NNNN" mirror live — on wide
+    // screens the seed field stays editable while the drawer is open.
+    if (el && el.id === 'seed-input') {
+      syncLogicDrawerSeed();
       return;
     }
 
@@ -1689,7 +1771,6 @@ async function boot() {
   wireServiceWorker();
   wireOnlineOffline();
   updateOfflineIndicator();
-  updateSeedControlsForMode();
   showScreen('screen-seed');
 
   try {
