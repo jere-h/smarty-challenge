@@ -47,7 +47,6 @@ function fruitByKey(key) {
  * @type {{
  *   seed:number, orders:string[][], stage:number,
  *   slots:Array<string|null>,
- *   selected:null|{type:'hand',fruit:string}|{type:'slot',index:number},
  *   attempts:number, started:boolean, deadline:number, finished:boolean,
  *   onExit:(action:string, seed:number)=>void,
  * }|null}
@@ -181,7 +180,7 @@ function paintIntro() {
   const steps = el('ul', { class: 'logic-intro__steps' });
   [
     'A hidden fruit order is waiting — arrange your fruits to match it.',
-    'Tap or drag fruits into the boxes. Drop one box on another to swap them, or drag it back to your hand.',
+    'Drag fruits into the boxes. Drop one box on another to swap them, or drag a fruit back to your hand.',
     'Press 🙌 Hands up! to check — the count of right spots flashes once, so memorize it.',
     'Clear all 3 stages before the 45 seconds run out. Faster is better!',
   ].forEach(function (text) {
@@ -265,32 +264,26 @@ function paintStage() {
 }
 
 // Repaints just the slots + hand + Hands-up disabled state from game state.
+// Slots and tokens are drag handles only (plain divs, not buttons) — every
+// fruit movement goes through the pointer drag below; there is no tap-to-place.
 function paintBoard() {
   const slotsEl = document.getElementById('logic-slots');
   const handEl = document.getElementById('logic-hand');
   if (!slotsEl || !handEl || !game) return;
 
-  const sel = game.selected;
-
   slotsEl.textContent = '';
   game.slots.forEach(function (fruitKey, i) {
     const filled = fruitKey != null;
     const fruit = filled ? fruitByKey(fruitKey) : null;
-    const selected = sel && sel.type === 'slot' && sel.index === i;
-    const btn = el('button', {
-      class: 'logic-slot'
-        + (filled ? ' logic-slot--filled' : '')
-        + (selected ? ' logic-slot--selected' : ''),
+    slotsEl.appendChild(el('div', {
+      class: 'logic-slot' + (filled ? ' logic-slot--filled' : ''),
       attrs: {
-        type: 'button',
         'data-slot-index': i,
-        'aria-pressed': selected ? 'true' : 'false',
         'aria-label': 'Box ' + (i + 1) + ' of ' + game.slots.length + ': '
           + (fruit ? fruit.name : 'empty'),
       },
       text: fruit ? fruit.emoji : '',
-    });
-    slotsEl.appendChild(btn);
+    }));
   });
 
   // Placed fruits leave the hand entirely — only the copies still in hand
@@ -299,19 +292,11 @@ function paintBoard() {
   FRUITS.forEach(function (fruit) {
     const remaining = remainingInHand(fruit.key);
     for (let copy = 0; copy < remaining; copy++) {
-      const selected = copy === 0
-        && sel && sel.type === 'hand' && sel.fruit === fruit.key;
-      const btn = el('button', {
-        class: 'logic-token' + (selected ? ' logic-token--selected' : ''),
-        attrs: {
-          type: 'button',
-          'data-fruit': fruit.key,
-          'aria-pressed': selected ? 'true' : 'false',
-          'aria-label': fruit.name,
-        },
+      handEl.appendChild(el('div', {
+        class: 'logic-token',
+        attrs: { 'data-fruit': fruit.key, 'aria-label': fruit.name },
         text: fruit.emoji,
-      });
-      handEl.appendChild(btn);
+      }));
     }
   });
 
@@ -376,43 +361,6 @@ function startCountdown() {
  * Interactions
  * ------------------------------------------------------------------ */
 
-function handleTokenTap(fruitKey) {
-  if (!game || game.finished) return;
-  if (remainingInHand(fruitKey) <= 0) return;
-  const sel = game.selected;
-  game.selected = sel && sel.type === 'hand' && sel.fruit === fruitKey
-    ? null // tapping the selected fruit again puts it down
-    : { type: 'hand', fruit: fruitKey };
-  paintBoard();
-}
-
-function handleSlotTap(index) {
-  if (!game || game.finished) return;
-  const sel = game.selected;
-
-  if (sel && sel.type === 'hand') {
-    // Place the selected hand fruit; any occupant simply returns to the hand
-    // (hand counts derive from the slots, so no bookkeeping needed).
-    game.slots[index] = sel.fruit;
-    game.selected = null;
-  } else if (sel && sel.type === 'slot') {
-    if (sel.index === index) {
-      // Second tap on the same picked-up slot sends the fruit back to hand.
-      game.slots[index] = null;
-      game.selected = null;
-    } else {
-      // The swap: exchange the two slots' contents (either may be empty).
-      const tmp = game.slots[sel.index];
-      game.slots[sel.index] = game.slots[index];
-      game.slots[index] = tmp;
-      game.selected = null;
-    }
-  } else if (game.slots[index] != null) {
-    game.selected = { type: 'slot', index };
-  }
-  paintBoard();
-}
-
 function handleHandsUp() {
   if (!game || game.finished || !slotsFull()) return;
 
@@ -466,20 +414,19 @@ function handleGiveUp() {
 }
 
 /* ------------------------------------------------------------------ *
- * Drag & drop — Pointer Events, so mouse and touch behave identically
- * (HTML5 drag-and-drop never fires on most mobile browsers). A press
- * that moves less than the threshold stays a tap and falls through to
- * the click handlers above; past it, a ghost fruit follows the pointer,
- * the box underneath highlights as the drop target, dropping on a box
- * swaps (or places), and dropping on the hand returns the fruit.
+ * Drag & drop — the ONLY way fruits move (no tap-to-place; the drag is
+ * the realism). Pointer Events, so mouse and touch behave identically
+ * (HTML5 drag-and-drop never fires on most mobile browsers). Past a
+ * small threshold the press lifts the fruit into a ghost that follows
+ * the pointer; the box underneath highlights as the drop target.
+ * Dropping a box on a box swaps (or moves into an empty one), hand to
+ * box places, and box to hand returns the fruit.
  * ------------------------------------------------------------------ */
 
 const DRAG_THRESHOLD_PX = 6;
 
 /** @type {{pointerId:number, source:{type:'slot',index:number}|{type:'hand',fruit:string}, originEl:Element, startX:number, startY:number, active:boolean, ghost:Element|null}|null} */
 let drag = null;
-/** Swallow the one click the browser may fire after a completed drag. */
-let suppressClick = false;
 
 function dragSourceFruit(source) {
   return source.type === 'slot' ? game.slots[source.index] : source.fruit;
@@ -512,9 +459,6 @@ function endDrag() {
 }
 
 function handleDragDown(event) {
-  // A drag's trailing click (if any) always precedes the next press — a
-  // leftover flag here means it never fired, so it must not eat this tap.
-  suppressClick = false;
   if (!game || !game.started || game.finished || drag) return;
   if (event.button != null && event.button !== 0) return;
   const target = event.target;
@@ -533,8 +477,6 @@ function handleDragDown(event) {
   }
   if (!source) return;
 
-  // No preventDefault here — a below-threshold press must still become the
-  // ordinary click the tap interactions rely on.
   drag = {
     pointerId: event.pointerId,
     source,
@@ -552,10 +494,6 @@ function handleDragDown(event) {
 // Threshold crossed — lift the fruit: dim the origin, spawn the ghost.
 function beginActiveDrag() {
   drag.active = true;
-  game.selected = null; // a drag replaces any tap-selection in progress
-  document.querySelectorAll('.logic-slot--selected, .logic-token--selected')
-    .forEach(function (n) { n.classList.remove('logic-slot--selected', 'logic-token--selected'); });
-
   drag.originEl.classList.add(
     drag.source.type === 'slot' ? 'logic-slot--drag-source' : 'logic-token--drag-source');
   document.body.classList.add('logic-dragging');
@@ -624,12 +562,7 @@ function handleDragUp(event) {
   const x = event.clientX;
   const y = event.clientY;
   endDrag();
-  if (!wasActive) return; // below threshold: a plain tap — the click handlers own it
-
-  // Press+release on the same element still fires a click; swallow exactly
-  // one (the timeout covers drops where no click follows at all).
-  suppressClick = true;
-  window.setTimeout(function () { suppressClick = false; }, 300);
+  if (!wasActive) return; // below threshold: never lifted — nothing to drop
 
   if (!game || game.finished) return;
   const target = dropTargetAt(x, y);
@@ -648,7 +581,6 @@ function handleDragUp(event) {
   } else if (target && target.type === 'hand' && source.type === 'slot') {
     game.slots[source.index] = null; // dragged back to the hand
   }
-  game.selected = null;
   paintBoard();
 }
 
@@ -664,28 +596,10 @@ function wireEvents() {
   eventsWired = true;
   document.addEventListener('pointerdown', handleDragDown);
   document.addEventListener('click', function (event) {
-    // A completed drag's trailing click must not double as a tap.
-    if (suppressClick) {
-      suppressClick = false;
-      event.preventDefault();
-      return;
-    }
     const target = event.target;
     if (!target || !target.closest) return;
     if (!target.closest('#screen-logic')) return;
 
-    const token = target.closest('.logic-token');
-    if (token && token.dataset.fruit) {
-      event.preventDefault();
-      handleTokenTap(token.dataset.fruit);
-      return;
-    }
-    const slot = target.closest('.logic-slot');
-    if (slot && slot.dataset.slotIndex != null) {
-      event.preventDefault();
-      handleSlotTap(Number(slot.dataset.slotIndex));
-      return;
-    }
     if (target.closest('#handsup-btn')) {
       event.preventDefault();
       handleHandsUp();
@@ -797,7 +711,6 @@ function finishGame(solvedAll) {
 
 function setupStageState() {
   game.slots = currentOrder().map(function () { return null; });
-  game.selected = null;
 }
 
 /**
@@ -814,7 +727,6 @@ export function startLogicGame(opts) {
     orders: buildStageOrders(seed),
     stage: 0,
     slots: [],
-    selected: null,
     attempts: 0,
     started: false,
     deadline: 0, // set when the intro is dismissed (handleIntroStart)

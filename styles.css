@@ -1929,7 +1929,6 @@ button {
   background: var(--color-bg);
   border: 2px dashed var(--color-border);
   border-radius: var(--radius);
-  cursor: pointer;
   transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease), transform 0.15s var(--ease);
 }
 
@@ -1937,13 +1936,6 @@ button {
   border-style: solid;
   background: var(--color-surface);
   cursor: grab;
-}
-
-.logic-slot--selected,
-.logic-token--selected {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 30%, transparent);
-  transform: translateY(-2px);
 }
 
 .logic-hand-label {
@@ -1973,13 +1965,8 @@ button {
   min-height: clamp(54px, 16vw, 76px);
 }
 
-.logic-slot:focus-visible,
-.logic-token:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 2px;
-}
-
-/* ---- Drag & drop (logic.js's Pointer Events drag) ---- */
+/* ---- Drag & drop (logic.js's Pointer Events drag — the only way fruits
+   move; there is no tap-to-place) ---- */
 
 /* Pressing a fruit must start a drag, never a page scroll. */
 .logic-slot,
