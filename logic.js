@@ -181,7 +181,7 @@ function paintIntro() {
   const steps = el('ul', { class: 'logic-intro__steps' });
   [
     'A hidden fruit order is waiting — arrange your fruits to match it.',
-    'Tap a fruit, then a box. Tap two boxes to swap them.',
+    'Tap or drag fruits into the boxes. Drop one box on another to swap them, or drag it back to your hand.',
     'Press 🙌 Hands up! to check — the count of right spots flashes once, so memorize it.',
     'Clear all 3 stages before the 45 seconds run out. Faster is better!',
   ].forEach(function (text) {
@@ -465,12 +465,211 @@ function handleGiveUp() {
   if (typeof onExit === 'function') onExit('back', seed);
 }
 
+/* ------------------------------------------------------------------ *
+ * Drag & drop — Pointer Events, so mouse and touch behave identically
+ * (HTML5 drag-and-drop never fires on most mobile browsers). A press
+ * that moves less than the threshold stays a tap and falls through to
+ * the click handlers above; past it, a ghost fruit follows the pointer,
+ * the box underneath highlights as the drop target, dropping on a box
+ * swaps (or places), and dropping on the hand returns the fruit.
+ * ------------------------------------------------------------------ */
+
+const DRAG_THRESHOLD_PX = 6;
+
+/** @type {{pointerId:number, source:{type:'slot',index:number}|{type:'hand',fruit:string}, originEl:Element, startX:number, startY:number, active:boolean, ghost:Element|null}|null} */
+let drag = null;
+/** Swallow the one click the browser may fire after a completed drag. */
+let suppressClick = false;
+
+function dragSourceFruit(source) {
+  return source.type === 'slot' ? game.slots[source.index] : source.fruit;
+}
+
+function clearDropHighlights() {
+  document.querySelectorAll('.logic-slot--drop-target').forEach(function (n) {
+    n.classList.remove('logic-slot--drop-target');
+  });
+  const hand = document.getElementById('logic-hand');
+  if (hand) hand.classList.remove('logic-hand--drop-target');
+}
+
+// Tear down every trace of a drag (ghost, highlights, listeners). Safe to
+// call twice; also called from finishGame/stopLogicGame so a game ending
+// mid-drag never strands a ghost on the page.
+function endDrag() {
+  window.removeEventListener('pointermove', handleDragMove);
+  window.removeEventListener('pointerup', handleDragUp);
+  window.removeEventListener('pointercancel', handleDragCancel);
+  document.body.classList.remove('logic-dragging');
+  if (drag) {
+    if (drag.ghost && drag.ghost.parentNode) drag.ghost.parentNode.removeChild(drag.ghost);
+    if (drag.originEl && drag.originEl.classList) {
+      drag.originEl.classList.remove('logic-slot--drag-source', 'logic-token--drag-source');
+    }
+  }
+  clearDropHighlights();
+  drag = null;
+}
+
+function handleDragDown(event) {
+  // A drag's trailing click (if any) always precedes the next press — a
+  // leftover flag here means it never fired, so it must not eat this tap.
+  suppressClick = false;
+  if (!game || !game.started || game.finished || drag) return;
+  if (event.button != null && event.button !== 0) return;
+  const target = event.target;
+  if (!target || !target.closest || !target.closest('#screen-logic')) return;
+
+  const slotEl = target.closest('.logic-slot--filled');
+  const tokenEl = target.closest('.logic-token');
+  let source = null;
+  let originEl = null;
+  if (slotEl && slotEl.dataset.slotIndex != null) {
+    source = { type: 'slot', index: Number(slotEl.dataset.slotIndex) };
+    originEl = slotEl;
+  } else if (tokenEl && tokenEl.dataset.fruit) {
+    source = { type: 'hand', fruit: tokenEl.dataset.fruit };
+    originEl = tokenEl;
+  }
+  if (!source) return;
+
+  // No preventDefault here — a below-threshold press must still become the
+  // ordinary click the tap interactions rely on.
+  drag = {
+    pointerId: event.pointerId,
+    source,
+    originEl,
+    startX: event.clientX,
+    startY: event.clientY,
+    active: false,
+    ghost: null,
+  };
+  window.addEventListener('pointermove', handleDragMove, { passive: false });
+  window.addEventListener('pointerup', handleDragUp);
+  window.addEventListener('pointercancel', handleDragCancel);
+}
+
+// Threshold crossed — lift the fruit: dim the origin, spawn the ghost.
+function beginActiveDrag() {
+  drag.active = true;
+  game.selected = null; // a drag replaces any tap-selection in progress
+  document.querySelectorAll('.logic-slot--selected, .logic-token--selected')
+    .forEach(function (n) { n.classList.remove('logic-slot--selected', 'logic-token--selected'); });
+
+  drag.originEl.classList.add(
+    drag.source.type === 'slot' ? 'logic-slot--drag-source' : 'logic-token--drag-source');
+  document.body.classList.add('logic-dragging');
+
+  const fruit = fruitByKey(dragSourceFruit(drag.source));
+  const rect = drag.originEl.getBoundingClientRect();
+  const ghost = el('div', {
+    class: 'logic-drag-ghost',
+    attrs: { 'aria-hidden': 'true' },
+    text: fruit.emoji,
+  });
+  ghost.style.width = rect.width + 'px';
+  ghost.style.height = rect.height + 'px';
+  document.body.appendChild(ghost);
+  drag.ghost = ghost;
+}
+
+function moveGhost(x, y) {
+  if (drag && drag.ghost) {
+    drag.ghost.style.left = x + 'px';
+    drag.ghost.style.top = y + 'px';
+  }
+}
+
+// What is under the pointer right now? The ghost is pointer-events:none, so
+// elementFromPoint sees straight through it.
+function dropTargetAt(x, y) {
+  const under = document.elementFromPoint(x, y);
+  if (!under || !under.closest) return null;
+  const slotEl = under.closest('.logic-slot');
+  if (slotEl && slotEl.closest('#screen-logic') && slotEl.dataset.slotIndex != null) {
+    return { type: 'slot', index: Number(slotEl.dataset.slotIndex), el: slotEl };
+  }
+  const handEl = under.closest('.logic-hand');
+  if (handEl) return { type: 'hand', el: handEl };
+  return null;
+}
+
+function handleDragMove(event) {
+  if (!drag || event.pointerId !== drag.pointerId) return;
+  if (!drag.active) {
+    const dx = event.clientX - drag.startX;
+    const dy = event.clientY - drag.startY;
+    if (dx * dx + dy * dy < DRAG_THRESHOLD_PX * DRAG_THRESHOLD_PX) return;
+    if (!game || game.finished) { endDrag(); return; }
+    beginActiveDrag();
+  }
+  event.preventDefault(); // this gesture is a drag, never a scroll
+  moveGhost(event.clientX, event.clientY);
+
+  clearDropHighlights();
+  const target = dropTargetAt(event.clientX, event.clientY);
+  if (!target) return;
+  if (target.type === 'slot') {
+    const isSource = drag.source.type === 'slot' && drag.source.index === target.index;
+    if (!isSource) target.el.classList.add('logic-slot--drop-target');
+  } else if (target.type === 'hand' && drag.source.type === 'slot') {
+    target.el.classList.add('logic-hand--drop-target');
+  }
+}
+
+function handleDragUp(event) {
+  if (!drag || event.pointerId !== drag.pointerId) return;
+  const wasActive = drag.active;
+  const source = drag.source;
+  const x = event.clientX;
+  const y = event.clientY;
+  endDrag();
+  if (!wasActive) return; // below threshold: a plain tap — the click handlers own it
+
+  // Press+release on the same element still fires a click; swallow exactly
+  // one (the timeout covers drops where no click follows at all).
+  suppressClick = true;
+  window.setTimeout(function () { suppressClick = false; }, 300);
+
+  if (!game || game.finished) return;
+  const target = dropTargetAt(x, y);
+  if (target && target.type === 'slot' && Number.isInteger(target.index)) {
+    if (source.type === 'slot') {
+      if (target.index !== source.index) {
+        // The drag swap: exchange the two boxes' contents (target may be empty).
+        const tmp = game.slots[source.index];
+        game.slots[source.index] = game.slots[target.index];
+        game.slots[target.index] = tmp;
+      }
+    } else if (remainingInHand(source.fruit) > 0) {
+      // Hand -> box: place; any occupant returns to the hand implicitly.
+      game.slots[target.index] = source.fruit;
+    }
+  } else if (target && target.type === 'hand' && source.type === 'slot') {
+    game.slots[source.index] = null; // dragged back to the hand
+  }
+  game.selected = null;
+  paintBoard();
+}
+
+function handleDragCancel(event) {
+  if (!drag || event.pointerId !== drag.pointerId) return;
+  endDrag();
+}
+
 // ONE delegated listener on the document (added once), scoped to controls
 // inside #screen-logic — same pattern app.js uses for its own screens.
 function wireEvents() {
   if (eventsWired) return;
   eventsWired = true;
+  document.addEventListener('pointerdown', handleDragDown);
   document.addEventListener('click', function (event) {
+    // A completed drag's trailing click must not double as a tap.
+    if (suppressClick) {
+      suppressClick = false;
+      event.preventDefault();
+      return;
+    }
     const target = event.target;
     if (!target || !target.closest) return;
     if (!target.closest('#screen-logic')) return;
@@ -532,6 +731,7 @@ function formatSolveTime(ms) {
 function finishGame(solvedAll) {
   if (!game || game.finished) return;
   game.finished = true;
+  endDrag(); // the clock can run out mid-drag — never strand a ghost
   const usedMs = solvedAll
     ? Math.min(TOTAL_TIME_MS, Math.max(0, TOTAL_TIME_MS - (game.deadline - Date.now())))
     : TOTAL_TIME_MS;
@@ -633,5 +833,6 @@ export function startLogicGame(opts) {
 export function stopLogicGame() {
   stopCountdown();
   clearFeedbackTimer();
+  endDrag();
   game = null;
 }

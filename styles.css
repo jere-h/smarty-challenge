@@ -1936,6 +1936,7 @@ button {
 .logic-slot--filled {
   border-style: solid;
   background: var(--color-surface);
+  cursor: grab;
 }
 
 .logic-slot--selected,
@@ -1962,7 +1963,7 @@ button {
   background: var(--color-surface);
   border: 2px solid var(--color-border);
   border-radius: var(--radius-pill);
-  cursor: pointer;
+  cursor: grab;
   transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease), transform 0.15s var(--ease), opacity 0.15s var(--ease);
 }
 
@@ -1976,6 +1977,66 @@ button {
 .logic-token:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
+}
+
+/* ---- Drag & drop (logic.js's Pointer Events drag) ---- */
+
+/* Pressing a fruit must start a drag, never a page scroll. */
+.logic-slot,
+.logic-token {
+  touch-action: none;
+}
+
+/* While a drag is live: grabbing cursor everywhere, and no accidental text
+   selection as the pointer sweeps the page. */
+body.logic-dragging {
+  cursor: grabbing;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* The fruit being dragged away: its origin stays put but visibly "lifted". */
+.logic-slot--drag-source,
+.logic-token--drag-source {
+  opacity: 0.35;
+  border-style: dashed;
+}
+
+/* The box currently under the pointer — where the drop would land. */
+.logic-slot--drop-target {
+  border-color: var(--color-accent);
+  border-style: solid;
+  background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 30%, transparent);
+  transform: scale(1.06);
+}
+
+/* Dropping here returns the fruit to the hand. */
+.logic-hand--drop-target {
+  outline: 2px dashed var(--color-accent);
+  outline-offset: 4px;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+}
+
+/* The fruit following the pointer. pointer-events:none keeps it invisible to
+   elementFromPoint, so the drop target is always what's underneath it. */
+.logic-drag-ghost {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.4rem;
+  line-height: 1;
+  background: var(--color-surface);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(1.12);
 }
 
 .logic-actions {
