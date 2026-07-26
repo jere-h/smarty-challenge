@@ -62,6 +62,41 @@ export function buildSummary(seed, result, bankVersion, challengeUrl, mode) {
   return lines.join('\n');
 }
 
+// buildLogicSummary(seed, result, challengeUrl) -> string
+// The Logic game's share text — built for BOTH outcomes: a finished run
+// ("All 3 stages in 12.3s") and a time's-up partial run ("Time's up —
+// 1/3 stages"). Spoiler-free like buildSummary: seed, stages cleared, time,
+// hands-up count, and a per-stage ✅/⬜ row; the hidden fruit orders never
+// enter this string. `result` is
+// { solvedAll, stagesCleared, totalStages, usedMs, attempts }.
+export function buildLogicSummary(seed, result, challengeUrl) {
+  const totalStages = result && typeof result.totalStages === 'number' ? result.totalStages : 3;
+  const cleared = result && typeof result.stagesCleared === 'number' ? result.stagesCleared : 0;
+  const solvedAll = !!(result && result.solvedAll);
+  const seconds = (Math.max(0, result ? result.usedMs : 0) / 1000).toFixed(1);
+  const attempts = result && typeof result.attempts === 'number' ? result.attempts : 0;
+
+  const stageRow = [];
+  for (let i = 0; i < totalStages; i++) {
+    stageRow.push(i < cleared ? '✅' : '⬜');
+  }
+
+  const lines = [
+    '\u{1F353} Smarty Challenge — Logic',
+    `Game number ${seed}`,
+    solvedAll
+      ? `All ${totalStages} stages in ${seconds}s  \u{1F64C} ${attempts} hands up`
+      : `Time's up — ${cleared}/${totalStages} stages  \u{1F64C} ${attempts} hands up`,
+    stageRow.join(''),
+    '',
+    'Same number, same hidden fruit orders. Beat me.',
+  ];
+  if (challengeUrl) {
+    lines.push(`Play it: ${challengeUrl}`);
+  }
+  return lines.join('\n');
+}
+
 // Open an intent URL in a new tab/window without ever navigating this app away
 // (keeps the results screen intact behind the share sheet).
 function openIntent(url) {

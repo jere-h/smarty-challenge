@@ -1548,6 +1548,10 @@ function updateShareOnlineState() {
   const online = isOnline();
   setShareButtonOnlineState('share-whatsapp', 'share-whatsapp-note', online);
   setShareButtonOnlineState('share-telegram', 'share-telegram-note', online);
+  // The Logic result card ships its own share row (logic.js) — same
+  // needs-internet rule; the id lookups are null-safe when it isn't painted.
+  setShareButtonOnlineState('logic-share-whatsapp', 'logic-share-whatsapp-note', online);
+  setShareButtonOnlineState('logic-share-telegram', 'logic-share-telegram-note', online);
 }
 
 function wireOnlineOffline() {

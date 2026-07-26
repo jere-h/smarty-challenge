@@ -2224,6 +2224,16 @@ body.logic-dragging {
   margin-top: var(--space-3);
 }
 
+/* The Logic result's share row (same .share look as the math/riddle
+   results); #logic-body children get no automatic rhythm, so space it here. */
+.logic-share {
+  margin-top: var(--space-4);
+}
+
+.logic-share + .results-actions {
+  margin-top: var(--space-4);
+}
+
 /* Stage-cleared popup — a small transient toast floating over the fresh
    board. The clock keeps running underneath: pointer-events:none lets every
    touch pass straight through to the board, and logic.js fades it on the

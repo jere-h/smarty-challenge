@@ -20,6 +20,7 @@
 // game is shorter than any reasonable resume window, so nothing is stored.
 
 import { makeMT19937 } from './prng.js';
+import { buildLogicSummary, shareWhatsApp, shareTelegram, copyToClipboard } from './share.js';
 
 const FRUITS = [
   { key: 'strawberry', emoji: '🍓', name: 'Strawberry' },
@@ -53,6 +54,7 @@ function fruitByKey(key) {
  *   slots:Array<string|null>,
  *   attempts:number, started:boolean, deadline:number, finished:boolean,
  *   onExit:(action:string, seed:number)=>void,
+ *   shareResult?:{solvedAll:boolean, stagesCleared:number, totalStages:number, usedMs:number, attempts:number},
  * }|null}
  */
 let game = null;
@@ -662,6 +664,12 @@ function wireEvents() {
       handleGiveUp();
       return;
     }
+    const shareBtn = target.closest('#logic-share-whatsapp, #logic-share-telegram, #logic-copy-summary');
+    if (shareBtn) {
+      event.preventDefault();
+      handleLogicShare(shareBtn);
+      return;
+    }
     const rematch = target.closest('#logic-rematch-btn');
     const sameSeed = target.closest('#logic-same-seed-btn');
     if (rematch || sameSeed) {
@@ -684,6 +692,84 @@ function formatSolveTime(ms) {
   return (Math.max(0, ms) / 1000).toFixed(1);
 }
 
+// A link that opens the app with this game number AND logic mode pre-set
+// (see app.js's readUrlChallenge) so a friend plays the identical puzzle.
+function buildLogicChallengeUrl(seed) {
+  try {
+    const u = new URL(window.location.href);
+    u.search = '';
+    u.hash = '';
+    u.searchParams.set('game', String(seed));
+    u.searchParams.set('mode', 'logic');
+    return u.toString();
+  } catch (_err) {
+    return null;
+  }
+}
+
+// Share clicks on the result card — available for a finished run AND a
+// time's-up partial run (game.shareResult is set for both in finishGame).
+function handleLogicShare(btn) {
+  if (!game || !game.finished || !game.shareResult) return;
+  const link = buildLogicChallengeUrl(game.seed);
+
+  if (btn.id === 'logic-share-whatsapp') {
+    shareWhatsApp(buildLogicSummary(game.seed, game.shareResult, link));
+  } else if (btn.id === 'logic-share-telegram') {
+    // Telegram carries the link in its url param, so the text goes WITHOUT
+    // the trailing link line — otherwise the message shows it twice.
+    shareTelegram(buildLogicSummary(game.seed, game.shareResult, null), link);
+  } else if (btn.id === 'logic-copy-summary') {
+    copyToClipboard(buildLogicSummary(game.seed, game.shareResult, link)).then(function (ok) {
+      const copyBtn = document.getElementById('logic-copy-summary');
+      if (!copyBtn) return;
+      copyBtn.textContent = ok ? 'Copied' : 'Copy failed';
+      window.setTimeout(function () {
+        const again = document.getElementById('logic-copy-summary');
+        if (again) again.textContent = 'Copy summary';
+      }, 1600);
+    });
+  }
+}
+
+// The share block under the result card — same .share look as the math /
+// riddle results. WhatsApp/Telegram are dead links offline, so they render
+// disabled with a "Needs internet" note when navigator.onLine is false;
+// app.js's updateShareOnlineState also reconciles them live on
+// online/offline transitions (its lookups are by id and null-safe).
+function buildShareBlock() {
+  const online = typeof navigator === 'undefined' || navigator.onLine !== false;
+
+  const share = el('div', { class: 'share logic-share' });
+  share.appendChild(el('p', { class: 'eyebrow', text: 'Share your result - no spoilers' }));
+
+  const row = el('div', { class: 'share__row' });
+
+  [
+    { id: 'logic-share-whatsapp', label: 'WhatsApp', cls: 'btn btn--primary share__btn share__btn--whatsapp' },
+    { id: 'logic-share-telegram', label: 'Telegram', cls: 'btn btn--ghost share__btn share__btn--telegram' },
+  ].forEach(function (spec) {
+    const wrap = el('div', { class: 'share__btn-wrap' });
+    const btn = el('button', { class: spec.cls, text: spec.label, attrs: { id: spec.id, type: 'button' } });
+    btn.disabled = !online;
+    btn.setAttribute('aria-disabled', String(!online));
+    wrap.appendChild(btn);
+    const note = el('p', { class: 'share__btn-note', text: 'Needs internet', attrs: { id: spec.id + '-note' } });
+    note.hidden = online;
+    wrap.appendChild(note);
+    row.appendChild(wrap);
+  });
+
+  row.appendChild(el('button', {
+    class: 'btn btn--ghost share__btn share__btn--copy',
+    text: 'Copy summary',
+    attrs: { id: 'logic-copy-summary', type: 'button' },
+  }));
+
+  share.appendChild(row);
+  return share;
+}
+
 function finishGame(solvedAll) {
   if (!game || game.finished) return;
   game.finished = true;
@@ -696,6 +782,17 @@ function finishGame(solvedAll) {
   clearFeedbackTimer();
 
   const stagesCleared = solvedAll ? STAGE_SIZES.length : game.stage;
+
+  // Kept on the game for the share buttons — set for BOTH outcomes, so a
+  // time's-up partial run is just as shareable as a finished one.
+  game.shareResult = {
+    solvedAll,
+    stagesCleared,
+    totalStages: STAGE_SIZES.length,
+    usedMs,
+    attempts: game.attempts,
+  };
+
   const root = bodyRoot();
   if (!root) return;
   root.textContent = '';
@@ -731,6 +828,8 @@ function finishGame(solvedAll) {
       : 'The 45 seconds ran out. Same number, same hidden orders — try it again.',
   }));
   root.appendChild(card);
+
+  root.appendChild(buildShareBlock());
 
   const actions = el('div', { class: 'results-actions' });
   actions.appendChild(el('button', {
